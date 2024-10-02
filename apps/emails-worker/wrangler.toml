@@ -1,7 +1,8 @@
 #:schema node_modules/wrangler/config-schema.json
-name = "emails"
+name = "emails-worker"
 main = "src/index.ts"
 compatibility_date = "2024-09-25"
+compatibility_flags = ["nodejs_compat"]
 
 # Workers Logs
 # Docs: https://developers.cloudflare.com/workers/observability/logs/workers-logs/
@@ -39,12 +40,10 @@ enabled = true
 # [browser]
 # binding = "MY_BROWSER"
 
-# Bind a D1 database. D1 is Cloudflare’s native serverless SQL database.
-# Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#d1-databases
-# [[d1_databases]]
-# binding = "MY_DB"
-# database_name = "my-database"
-# database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+[[d1_databases]]
+binding = "DB"
+database_name = "prod-emails_forward"
+database_id = "fe17b2fd-b691-4ca3-b913-c070e2845fba"
 
 # Bind a dispatch namespace. Use Workers for Platforms to deploy serverless functions programmatically on behalf of your customers.
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#dispatch-namespace-bindings-workers-for-platforms

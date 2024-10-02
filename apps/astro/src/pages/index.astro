@@ -1,0 +1,17 @@
+---
+import { getCloudflareD1 } from 'database/db'
+import {getEmails, getEmailsByMessageTo} from 'database/dao'
+import {emails} from 'database/schema'
+
+const { env } = Astro.locals.runtime;
+
+const db = getCloudflareD1(env.DB)
+// const result = await getEmails(db)
+const toHi = await getEmailsByMessageTo(db, 'hi@what-the-fuck.sbs')
+---
+
+<main>
+		<!-- <code>{JSON.stringify(result)}</code> -->
+		<!-- <code>{JSON.stringify(result)}</code> -->
+		<code>{JSON.stringify(toHi)}</code>
+</main>

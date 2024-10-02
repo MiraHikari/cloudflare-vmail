@@ -1,0 +1,20 @@
+{
+  "name": "database",
+  "version": "2.0.0",
+  "description": "",
+  "scripts": {
+    "sqlite": "drizzle-kit generate:sqlite"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "drizzle-orm": "^0.29.3",
+    "drizzle-zod": "^0.5.1",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.20.12",
+    "typescript": "^5.3.3"
+  }
+}
