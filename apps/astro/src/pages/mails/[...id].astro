@@ -19,26 +19,17 @@ const { data, error } = await Astro.callAction(actions.getEmail, {
 
 >
   <div class="mt-24 mx-6 md:mx-10 flex flex-1 flex-col p-2 gap-10">
-  <a
-    href="/"
-    class="flex text-primary w-fit font-semibold items-center border p-2 rounded-md gap-2 border-border"
+    <a
+      href="/"
+      class="flex text-primary w-fit font-semibold items-center border p-2 rounded-md gap-2 border-border"
 
-  >
-    <Icon icon="mdi:arrow-left" client:load />
-    Back Home
-  </a>
+    >
+      <Icon icon="mdi:arrow-left" client:load />
+      Back Home
+    </a>
 
-  {
-    data && (
-      <div>
-        <a
-          href="/"
-          class="flex text-primary w-fit font-semibold items-center border p-2 rounded-md gap-2 border-border"
-
-        >
-          <Icon icon="mdi:arrow-left" client:load />
-          Back Home
-        </a>
+    {
+      data && (
         <main>
           <div class="flex items-start text-primary">
             <div class="flex items-start gap-4 text-sm">
@@ -62,17 +53,17 @@ const { data, error } = await Astro.callAction(actions.getEmail, {
             <article class="prose" set:html={data.html || data.text || ''} />
           </div>
         </main>
-      </div>
-    )
-  }
-  {
-    (data?.id && error) && (
-      <div class="flex justify-center align-middle items-center">
-        <h1 class="font-black text-primary text-2xl">
-          Oops... Something went wrong!
-          {error}
-        </h1>
-      </div>
-    )
-  }
+      )
+    }
+    {
+      data?.id && error && (
+        <div class="flex justify-center align-middle items-center">
+          <h1 class="font-black text-primary text-2xl">
+            Oops... Something went wrong!
+            {error}
+          </h1>
+        </div>
+      )
+    }
+  </div>
 </Layout>
