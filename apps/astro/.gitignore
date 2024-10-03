@@ -26,3 +26,6 @@ pnpm-debug.log*
 # wrangler files
 .wrangler
 .dev.vars
+
+# ignore wranger config
+wrangler.toml
