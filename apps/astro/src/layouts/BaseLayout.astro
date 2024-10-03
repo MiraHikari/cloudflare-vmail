@@ -9,7 +9,7 @@ interface Props {
 const { title, description } = Astro.props
 ---
 
-<script is:inline>
+<script is:inline data-astro-rerun>
   function getThemePreference() {
     if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
       return localStorage.getItem('theme')
