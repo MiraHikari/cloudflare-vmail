@@ -1,6 +1,7 @@
 # Cloudflare VMails
 
 Inspired by **[oiov/email](https://github.com/oiov/vmail)**. Thanks to his work.
+[shadcn/ui](https://github.com/shadcn/ui) is the UI framework used by this project. So we have light mode and dark mode now.
 
 This project is fully use cloudflare stacks to refactor original author's project. And I used Astro instead of the Remix framework used by the original author and used actions, a new feature of Astro 4.5, to build a dual-stack interface. Now it can be fully hosted on top of the Cloudflare family of services and can be used with just a Worker Free Plan!
 
