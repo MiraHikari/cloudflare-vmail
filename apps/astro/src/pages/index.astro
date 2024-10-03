@@ -31,7 +31,7 @@ const mails = (await Astro.callAction(actions.getEmailsByMessageToWho, {}))
       }
     </div>
     <div class="w-full flex-1 overflow-hidden">
-      <Inbox mails={mails ?? []} client:load />
+      <Inbox mails={mails!} client:load />
     </div>
   </div>
 </Layout>

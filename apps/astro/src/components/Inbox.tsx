@@ -14,7 +14,7 @@ const queryClient = new QueryClient()
 
 export function Inbox({ mails }: { mails: Email[] }) {
   const { data, isFetching } = useQuery({
-    queryKey: ['mails'],
+    queryKey: ['vmails'],
     queryFn: async () => (await actions.getEmailsByMessageToWho()).data!,
     initialData: mails,
     refetchInterval: 20000, // refetch every 20 seconds
