@@ -1,4 +1,5 @@
 ---
+import type { MailboxSession } from '@/actions'
 import GenerateNewMailboxForm from '@/components/GenerateNewMailboxForm.astro'
 import Inbox from '@/components/Inbox'
 import Infomation from '@/components/Infomation.astro'
@@ -6,7 +7,7 @@ import LoggedInMailboxForm from '@/components/LoggedInMailboxForm.astro'
 import Layout from '@/layouts/Layout.astro'
 import { actions } from 'astro:actions'
 
-const savedMailbox = Astro.cookies.get('mailbox')?.value
+const savedMailbox = Astro.cookies.get('mailbox')?.json() as MailboxSession
 // eslint-disable-next-line antfu/no-top-level-await
 const mails = (await Astro.callAction(actions.getEmailsByMessageToWho, {}))
   ?.data
@@ -23,9 +24,9 @@ const mails = (await Astro.callAction(actions.getEmailsByMessageToWho, {}))
     >
       <Infomation />
 
-      {!savedMailbox && <GenerateNewMailboxForm />}
+      {!savedMailbox?.mailbox && <GenerateNewMailboxForm />}
       {
-        savedMailbox && (
+        savedMailbox?.mailbox && (
           <LoggedInMailboxForm hasMails={(mails?.length || 0) >= 1} />
         )
       }

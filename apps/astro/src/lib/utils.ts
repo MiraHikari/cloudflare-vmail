@@ -2,6 +2,7 @@ import type {
   Config,
 } from 'unique-names-generator'
 import { type ClassValue, clsx } from 'clsx'
+import * as jose from 'jose'
 import { twMerge } from 'tailwind-merge'
 import {
   languages,
@@ -23,4 +24,13 @@ export function generateNewMailAddr(domain: string) {
   }
 
   return `${uniqueNamesGenerator(config)}@${domain}`.toLowerCase()
+}
+
+export const encodeJWTSecret = (str: string) => new TextEncoder().encode(str)
+
+export async function genToken(str: string, secret: string) {
+  return await new jose.SignJWT({ str })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setExpirationTime('24h')
+    .sign(encodeJWTSecret(secret))
 }

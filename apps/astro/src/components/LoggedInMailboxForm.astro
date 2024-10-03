@@ -1,4 +1,7 @@
 ---
+import type { MailboxSession } from '@/actions'
+import { encodeJWTSecret } from '@/lib/utils'
+import * as jose from 'jose'
 import CopyButton from './CopyButton'
 import DeleteEvereyThingButton from './DeleteEvereyThingButton'
 import ExitButton from './ExitButton'
@@ -9,22 +12,36 @@ interface Props {
 
 const { hasMails } = Astro.props
 
-const savedMailbox = Astro.cookies.get('mailbox')?.value
+const savedMailbox = Astro.cookies.get('mailbox')?.json() as MailboxSession
+
+// eslint-disable-next-line antfu/no-top-level-await
+const verifed = await jose.jwtVerify(
+  savedMailbox.token,
+  encodeJWTSecret(Astro.locals.runtime.env.JWT_SECRET),
+).then(() => true).catch(() => false)
 ---
 
 <div class="w-full md:max-w-[350px] mb-4">
   <div class="mb-4 font-semibold text-sm">Email Address</div>
-  <div
-    class="flex items-center mb-6 text-primary bg-secondary backdrop-blur-xl shadow-inner px-4 py-4 rounded-md w-full border-border border"
-
-  >
-    <span class="truncate">{savedMailbox}</span>
-    <CopyButton
-      client:load
-      content={savedMailbox!.toString()}
-      className="p-1 rounded-md ml-auto transition-all duration-200"
-    />
-  </div>
+  {
+    verifed && (
+      <div class="flex items-center mb-6 text-primary bg-secondary backdrop-blur-xl shadow-inner px-4 py-4 rounded-md w-full border-border border">
+        <span class="truncate">{savedMailbox.mailbox}</span>
+        <CopyButton
+          client:load
+          content={savedMailbox.mailbox}
+          className="p-1 rounded-md ml-auto transition-all duration-200"
+        />
+      </div>
+    )
+  }
+  {
+    !verifed && (
+      <h1 class="text-destructive font-black text-xl mb-4">
+        Failed to verify your mailbox. Your mailbox token may be expired or invalid.
+      </h1>
+    )
+  }
   <ExitButton client:only="react" />
   {hasMails && <DeleteEvereyThingButton client:only="react" />}
 </div>
