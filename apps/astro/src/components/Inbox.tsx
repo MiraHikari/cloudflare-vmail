@@ -32,7 +32,7 @@ export function Inbox({ mails }: { mails: Email[] }) {
             <MailIcon className="size-6" />
             Inbox
             {data.length > 0 && (
-              <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-primary bg-muted rounded-full">
+              <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-primary bg-background rounded-full">
                 {data.length}
               </span>
             )}
