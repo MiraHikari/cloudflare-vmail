@@ -12,7 +12,7 @@ const mails = (await Astro.callAction(actions.getEmailsByMessageToWho, {}))
   ?.data
 ---
 
-<Layout>
+<Layout title="Inbox - MiraHikari's Vmail" description={Astro.locals.runtime.env.SITE_DESCRIPTION}>
   <div
     class="h-full flex flex-col gap-4 md:flex-row justify-center items-start mt-24 mx-6 md:mx-10"
 
@@ -24,7 +24,11 @@ const mails = (await Astro.callAction(actions.getEmailsByMessageToWho, {}))
       <Infomation />
 
       {!savedMailbox && <GenerateNewMailboxForm />}
-      {savedMailbox && <LoggedInMailboxForm hasMails={(mails?.length || 0) > 1} />}
+      {
+        savedMailbox && (
+          <LoggedInMailboxForm hasMails={(mails?.length || 0) > 1} />
+        )
+      }
     </div>
     <div class="w-full flex-1 overflow-hidden">
       <Inbox mails={mails || []} client:load />

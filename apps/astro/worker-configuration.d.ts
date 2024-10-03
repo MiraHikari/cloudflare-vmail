@@ -5,5 +5,6 @@ interface Env {
 	TURNSTILE_SITE_KEY: "0x4AAAAAAAwm3oDFAyipG4dr";
 	MAIL_DOMAIN: "what-the-fuck.sbs";
 	COOKIE_EXPIRES_IN_SECONDS: 86400;
+	SITE_DESCRIPTION: "Virtual temporary Email. Privacy friendly, Valid for 1 day, AD friendly, 100% Run on Cloudflare, Fully Open Source, Based on CLOUD.";
 	DB: D1Database;
 }

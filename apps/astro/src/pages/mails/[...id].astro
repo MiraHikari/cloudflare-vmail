@@ -13,7 +13,10 @@ const { data, error } = await Astro.callAction(actions.getEmail, {
 })
 ---
 
-<Layout>
+<Layout
+  title={`${data?.id || 'ERROR'} - MiraHikari's VMail`}
+  description="Virtual temporary Email. Privacy friendly, Valid for 1 day, AD friendly, 100% Run on Cloudflare, Fully Open Source, Based on CLOUD"
+>
   <div class="mt-24 mx-6 md:mx-10 flex flex-1 flex-col p-2 gap-10">
     <a
       href="/"
