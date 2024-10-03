@@ -14,8 +14,12 @@ const queryClient = new QueryClient()
 
 export function Inbox({ mails }: { mails: Email[] }) {
   const { data, isFetching } = useQuery({
-    queryKey: ['vmails'],
-    queryFn: async () => (await actions.getEmailsByMessageToWho()).data!,
+    queryKey: ['emails'],
+    queryFn: async () => {
+      const res = (await actions.getEmailsByMessageToWho()).data!
+
+      return res
+    },
     initialData: mails,
     refetchInterval: 20000, // refetch every 20 seconds
   })
@@ -38,7 +42,7 @@ export function Inbox({ mails }: { mails: Email[] }) {
             title="refresh"
             onClick={() =>
               queryClient.invalidateQueries({
-                queryKey: ['mails'],
+                queryKey: ['emails'],
               })}
           >
             <Icon
