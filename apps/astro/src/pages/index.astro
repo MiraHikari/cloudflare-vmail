@@ -26,12 +26,12 @@ const mails = (await Astro.callAction(actions.getEmailsByMessageToWho, {}))
       {!savedMailbox && <GenerateNewMailboxForm />}
       {
         savedMailbox && (
-          <LoggedInMailboxForm hasMails={(mails?.length || 0) > 1} />
+          <LoggedInMailboxForm hasMails={(mails?.length || 0) >= 1} />
         )
       }
     </div>
     <div class="w-full flex-1 overflow-hidden">
-      <Inbox mails={mails || []} client:load />
+      <Inbox mails={mails ?? []} client:load />
     </div>
   </div>
 </Layout>
