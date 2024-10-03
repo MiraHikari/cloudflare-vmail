@@ -1,0 +1,65 @@
+---
+import Layout from '@/layouts/Layout.astro'
+import { Icon } from '@iconify/react'
+import { actions } from 'astro:actions'
+import { format } from 'date-fns'
+import { UserCircleIcon } from 'lucide-react'
+
+const { id } = Astro.params as { id: string }
+
+// eslint-disable-next-line antfu/no-top-level-await
+const { data, error } = await Astro.callAction(actions.getEmail, {
+  id,
+})
+---
+
+<Layout>
+  <div class="mt-24 mx-6 md:mx-10 flex flex-1 flex-col p-2 gap-10">
+    <a
+      href="/"
+      class="flex text-primary w-fit font-semibold items-center border p-2 rounded-md gap-2 border-border"
+
+    >
+      <Icon icon="mdi:arrow-left" client:load />
+      Back Home
+    </a>
+
+    {
+      data && (
+        <main>
+          <div class="flex items-start text-primary">
+            <div class="flex items-start gap-4 text-sm">
+              <UserCircleIcon />
+              <div class="grid gap-1">
+                <div class="font-semibold">{data.from.name}</div>
+                <div class="line-clamp-1 text-xs">{data.subject}</div>
+                <div class="line-clamp-1 text-xs">
+                  <span class="font-medium">Reply-To:</span> {data.from.address}
+                </div>
+                <div class="line-clamp-1 text-xs">Email ID: {data.id}</div>
+              </div>
+            </div>
+            {data.date && (
+              <div class="ml-auto text-xs text-muted-foreground">
+                {format(new Date(data.date), 'PPpp')}
+              </div>
+            )}
+          </div>
+          <div class="flex-1 flex text-sm border-border backdrop-blur-xl rounded-md p-3 min-h-0 overflow-y-auto">
+            <article class="prose" set:html={data.html || data.text || ''} />
+          </div>
+        </main>
+      )
+    }
+    {
+      error && (
+        <div class="flex justify-center align-middle items-center">
+          <h1 class="font-black text-primary text-2xl">
+            Oops... Something went wrong!
+            {error?.message}
+          </h1>
+        </div>
+      )
+    }
+  </div>
+</Layout>

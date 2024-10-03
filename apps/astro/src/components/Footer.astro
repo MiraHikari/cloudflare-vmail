@@ -1,0 +1,37 @@
+---
+import { GitHubLogoIcon } from '@radix-ui/react-icons'
+import { ModeToggle } from './ModeToggle'
+import { Button } from './ui/button'
+---
+
+<div
+  class="text-primary w-full mt-auto flex flex-col items-center justify-between px-5 pt-16 mb-10 md:px-10 mx-auto sm:flex-row"
+
+>
+  <a href="/" class="text-xl font-black leading-none select-none logo">
+    MiraHikari's Vmail
+  </a>
+  <p
+    class="mt-4 text-sm text-secondary-foregrund sm:ml-4 sm:pl-4 sm:border-l sm:border-border sm:mt-0"
+
+  >
+    © 2023-2024 Products of{' '}
+    <a
+      class="font-semibold underline hover:text-primary"
+      href="https://www.gcxstudio.cn"
+      target="_blank"
+
+    >
+      MiraHikari
+    </a>
+  </p>
+  <section
+    class="inline-flex justify-center mt-4 space-x-5 sm:ml-auto sm:mt-0 sm:justify-start text-secondary-foreground underline hover:text-primary"
+
+  >
+    <ModeToggle client:load />
+    <Button variant="outline" size="icon">
+      <a href="https://github.com/MiraHikari"><GitHubLogoIcon /></a>
+    </Button>
+  </section>
+</div>

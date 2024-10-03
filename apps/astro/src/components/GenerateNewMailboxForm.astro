@@ -1,0 +1,47 @@
+---
+import { SelectDomain } from '@/components/SelectDomain'
+import { Button } from '@/components/ui/button'
+import { Turnstile } from '@marsidev/react-turnstile'
+import { actions, isInputError } from 'astro:actions'
+import PasswordDrawer from './PasswordDrawer'
+
+const Env = Astro.locals.runtime.env
+
+const result = Astro.getActionResult(actions.generateNewMailbox)
+const turnstileSiteKey = Env.TURNSTILE_SITE_KEY
+const mailDomains = Env.MAIL_DOMAIN.split(',')
+---
+
+<div>
+  <form
+    action={actions.generateNewMailbox}
+    method="POST"
+    class="w-full md:max-w-[350px]"
+
+  >
+    <div class="mb-3 font-semibold">Select Domain</div>
+    {mailDomains.length && <SelectDomain domains={mailDomains} client:load />}
+
+    <div class="mb-3 font-semibold">Bot Check</div>
+    <div class="[&_iframe]:!w-full h-[65px] max-w-[300px] mb-4">
+      <Turnstile siteKey={turnstileSiteKey} client:only="react" />
+    </div>
+
+    <Button
+      type="submit"
+      variant="default"
+      className="py-2.5 rounded-md w-full hover:opacity-90 disabled:cursor-not-allowed disabled:bg-zinc-500max-w-[300px]"
+    >Create a New Mailbox</Button
+    >
+  </form>
+
+  <div>
+    {
+      isInputError(result?.error) && (
+        <div class="text-red-500">Action error: {result.error.message}</div>
+      )
+    }
+  </div>
+
+  <PasswordDrawer client:load />
+</div>

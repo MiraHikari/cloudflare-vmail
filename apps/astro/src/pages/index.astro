@@ -1,17 +1,33 @@
 ---
-import { getCloudflareD1 } from 'database/db'
-import {getEmails, getEmailsByMessageTo} from 'database/dao'
-import {emails} from 'database/schema'
+import GenerateNewMailboxForm from '@/components/GenerateNewMailboxForm.astro'
+import Inbox from '@/components/Inbox'
+import Infomation from '@/components/Infomation.astro'
+import LoggedInMailboxForm from '@/components/LoggedInMailboxForm.astro'
+import Layout from '@/layouts/Layout.astro'
+import { actions } from 'astro:actions'
 
-const { env } = Astro.locals.runtime;
-
-const db = getCloudflareD1(env.DB)
-// const result = await getEmails(db)
-const toHi = await getEmailsByMessageTo(db, 'hi@what-the-fuck.sbs')
+const savedMailbox = Astro.cookies.get('mailbox')?.value
+// eslint-disable-next-line antfu/no-top-level-await
+const mails = (await Astro.callAction(actions.getEmailsByMessageToWho, {}))
+  ?.data
 ---
 
-<main>
-		<!-- <code>{JSON.stringify(result)}</code> -->
-		<!-- <code>{JSON.stringify(result)}</code> -->
-		<code>{JSON.stringify(toHi)}</code>
-</main>
+<Layout>
+  <div
+    class="h-full flex flex-col gap-4 md:flex-row justify-center items-start mt-24 mx-6 md:mx-10"
+
+  >
+    <div
+      class="flex flex-col text-primary items-start w-full md:w-[350px] mx-auto gap-2"
+
+    >
+      <Infomation />
+
+      {!savedMailbox && <GenerateNewMailboxForm />}
+      {savedMailbox && <LoggedInMailboxForm hasMails={(mails?.length || 0) > 1} />}
+    </div>
+    <div class="w-full flex-1 overflow-hidden">
+      <Inbox mails={mails || []} client:load />
+    </div>
+  </div>
+</Layout>

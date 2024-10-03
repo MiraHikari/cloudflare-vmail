@@ -18,6 +18,22 @@ export async function getEmails(db: DrizzleD1Database) {
   }
 }
 
+export async function deleteEmail(db: DrizzleD1Database, id: string) {
+  try {
+    return await db.delete(emails).where(eq(emails.id, id)).execute();
+  } catch (e) {
+    return [];
+  }
+}
+
+export async function deleteAllEmailsByMessageTo(db: DrizzleD1Database, messageTo: string) {
+  try {
+    return await db.delete(emails).where(eq(emails.messageTo, messageTo)).execute();
+  } catch (e) {
+    return [];
+  }
+}
+
 export async function getEmail(db: DrizzleD1Database, id: string) {
   try {
     const result = await db
@@ -34,7 +50,7 @@ export async function getEmail(db: DrizzleD1Database, id: string) {
   }
 }
 
-export async function getEmailByPassword(db: DrizzleD1Database, id: string) {
+export async function getEmailByIdOfAEmail(db: DrizzleD1Database, id: string) {
   try {
     const result = await db
       .select({ messageTo: emails.messageTo })

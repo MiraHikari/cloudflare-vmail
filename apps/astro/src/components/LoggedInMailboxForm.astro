@@ -1,0 +1,30 @@
+---
+import CopyButton from './CopyButton'
+import DeleteEvereyThingButton from './DeleteEvereyThingButton'
+import ExitButton from './ExitButton'
+
+interface Props {
+  hasMails?: boolean
+}
+
+const { hasMails } = Astro.props
+
+const savedMailbox = Astro.cookies.get('mailbox')?.value
+---
+
+<div class="w-full md:max-w-[350px] mb-4">
+  <div class="mb-4 font-semibold text-sm">Email Address</div>
+  <div
+    class="flex items-center mb-6 text-primary bg-secondary backdrop-blur-xl shadow-inner px-4 py-4 rounded-md w-full border-border border"
+
+  >
+    <span class="truncate">{savedMailbox}</span>
+    <CopyButton
+      client:load
+      content={savedMailbox!.toString()}
+      className="p-1 rounded-md ml-auto transition-all duration-200"
+    />
+  </div>
+  <ExitButton client:only="react" />
+  {hasMails && <DeleteEvereyThingButton client:only="react" />}
+</div>

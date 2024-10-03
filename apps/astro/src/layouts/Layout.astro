@@ -1,0 +1,14 @@
+---
+import Footer from '@/components/Footer.astro'
+import { Toaster } from '@/components/ui/toaster'
+import BaseLayout from './BaseLayout.astro'
+
+---
+
+<BaseLayout title="">
+  <div class="mx-auto min-h-screen flex flex-col bg-background">
+    <slot />
+    <Footer />
+  </div>
+  <Toaster client:only="react" />
+</BaseLayout>
