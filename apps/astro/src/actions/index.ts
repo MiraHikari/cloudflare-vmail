@@ -3,9 +3,7 @@ import { ActionError, defineAction } from 'astro:actions'
 import { z } from 'astro:schema'
 import * as DAO from 'database/dao'
 import { getCloudflareD1 } from 'database/db'
-import FormData from 'form-data'
 import * as jose from 'jose'
-import Mailgun from 'mailgun.js'
 
 export interface MailboxSession {
   mailbox: string
@@ -135,48 +133,48 @@ export const server = {
       return await DAO.deleteAllEmailsByMessageTo(db, mailbox.token)
     },
   }),
-  sendEmail: defineAction({
-    input: z.object({
-      to: z.string().email(),
-      subject: z.string(),
-      content: z.string(),
-      bcc: z.string().optional(),
-      cc: z.string().optional(),
-      name: z.string(),
-    }),
-    async handler(input, ctx) {
-      const Env = ctx.locals.runtime.env
-      const { mailbox, token } = ctx.cookies
-        .get('mailbox')
-        ?.json() as MailboxSession
-      if (!mailbox) {
-        throw new ActionError({
-          code: 'NOT_FOUND',
-          message: 'mailbox not found',
-        })
-      }
+  // sendEmail: defineAction({
+  //   input: z.object({
+  //     to: z.string().email(),
+  //     subject: z.string(),
+  //     content: z.string(),
+  //     bcc: z.string().optional(),
+  //     cc: z.string().optional(),
+  //     name: z.string(),
+  //   }),
+  //   async handler(input, ctx) {
+  //     const Env = ctx.locals.runtime.env
+  //     const { mailbox, token } = ctx.cookies
+  //       .get('mailbox')
+  //       ?.json() as MailboxSession
+  //     if (!mailbox) {
+  //       throw new ActionError({
+  //         code: 'NOT_FOUND',
+  //         message: 'mailbox not found',
+  //       })
+  //     }
 
-      await jose.jwtVerify(token, encodeJWTSecret(Env.JWT_SECRET))
+  //     await jose.jwtVerify(token, encodeJWTSecret(Env.JWT_SECRET))
 
-      const sender = mailbox.split('@')
-      sender[1] = Env.MAILGUN_SEND_DOMAIN
+  //     const sender = mailbox.split('@')
+  //     sender[1] = Env.MAILGUN_SEND_DOMAIN
 
-      const mailgun = new Mailgun(FormData)
-      const mailgunClient = mailgun.client({
-        username: 'api',
-        key: Env.MAILGUN_API_KEY,
-      })
+  //     const mailgun = new Mailgun(FormData)
+  //     const mailgunClient = mailgun.client({
+  //       username: 'api',
+  //       key: Env.MAILGUN_API_KEY,
+  //     })
 
-      await mailgunClient.messages.create(Env.MAILGUN_SEND_DOMAIN, {
-        from: `${input.name} <${sender.join('@')}>`,
-        to: input.to.split(','),
-        subject: input.subject,
-        html: input.content,
-        bcc: input.bcc,
-        cc: input.cc,
-      })
-    },
-  }),
+  //     await mailgunClient.messages.create(Env.MAILGUN_SEND_DOMAIN, {
+  //       from: `${input.name} <${sender.join('@')}>`,
+  //       to: input.to.split(','),
+  //       subject: input.subject,
+  //       html: input.content,
+  //       bcc: input.bcc,
+  //       cc: input.cc,
+  //     })
+  //   },
+  // }),
   exit: defineAction({
     handler: async (_, ctx) => {
       ctx.cookies.set(
