@@ -6,6 +6,7 @@ Inspired by **[oiov/email](https://github.com/oiov/vmail)**. Thanks to his work.
 
 This project is fully use cloudflare stacks to refactor original author's project. And I used Astro instead of the Remix framework used by the original author and used actions, a new feature of Astro 4.5, to build a dual-stack interface. Now it can be fully hosted on top of the Cloudflare family of services and can be used with just a Worker Free Plan!
 
+
 ## Features
 
 - 🎯 Privacy-friendly, no registration required, out-of-the-box
@@ -34,12 +35,15 @@ compatibility_date = "2024-09-25"
 pages_build_output_dir = "./dist"
 
 [vars]
-TURNSTILE_SECRET="secret"
-TURNSTILE_SITE_KEY="key"
-MAIL_DOMAIN="domain1,domain2"
+TURNSTILE_SECRET="TURNSTILE_SECRET"
+TURNSTILE_SITE_KEY="TURNSTILE_SITE_KEY"
+MAIL_DOMAIN="what-the-fuck.sbs"
 COOKIE_EXPIRES_IN_SECONDS=86400
 SITE_DESCRIPTION="Virtual temporary Email. Privacy friendly, Valid for 1 day, AD friendly, 100% Run on Cloudflare, Fully Open Source, Based on CLOUD."
-JWT_SECRET="what-the-fuck.sbs_hhhhhhhhhhhhhhhhh"
+JWT_SECRET="JWT_SECRET"
+# MAILGUN_BASE_URL=""
+# MAILGUN_API_KEY=""
+# MAILGUN_SEND_DOMAIN=""
 
 [[d1_databases]]
 # DO NOT CHANGE BINDING VALUE
