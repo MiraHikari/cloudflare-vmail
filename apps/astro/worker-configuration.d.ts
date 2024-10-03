@@ -7,5 +7,8 @@ interface Env {
 	COOKIE_EXPIRES_IN_SECONDS: 86400;
 	SITE_DESCRIPTION: "Virtual temporary Email. Privacy friendly, Valid for 1 day, AD friendly, 100% Run on Cloudflare, Fully Open Source, Based on CLOUD.";
 	JWT_SECRET: "what-the-fuck.sbs_hhhhhhhhhhhhhhhhh";
+	MAILGUN_BASE_URL: "https://api.mailgun.net/v3/sender.what-the-fuck.sbs";
+	MAILGUN_API_KEY: "89aa6e351a16ff06fc2ef13360a26cf6-3724298e-5d9d5128";
+	MAILGUN_SEND_DOMAIN: "sender.what-the-fuck.sbs";
 	DB: D1Database;
 }

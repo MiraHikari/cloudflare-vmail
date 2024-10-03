@@ -4,12 +4,13 @@ import { navigate } from 'astro:transitions/client'
 import { Button } from './ui/button'
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from './ui/drawer'
 
-export default function DeleteEveryThingButton() {
+export default function DeleteEveryThingButton({ isDisabled }: { isDisabled: boolean }) {
   return (
     <Drawer>
-      <DrawerTrigger className="w-full">
+      <DrawerTrigger disabled={isDisabled}>
         <Button
           variant="destructive"
+          disabled={isDisabled}
           className="mt-4 py-2.5 rounded-md w-full hover:opacity-90 disabled:cursor-not-allowed"
         >
           Delete All Emails

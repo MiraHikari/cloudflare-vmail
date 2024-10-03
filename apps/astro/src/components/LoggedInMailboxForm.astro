@@ -5,6 +5,7 @@ import * as jose from 'jose'
 import CopyButton from './CopyButton'
 import DeleteEvereyThingButton from './DeleteEvereyThingButton'
 import ExitButton from './ExitButton'
+import SenderButton from './SenderDialog.loggedFormBtn'
 
 interface Props {
   hasMails?: boolean
@@ -15,10 +16,13 @@ const { hasMails } = Astro.props
 const savedMailbox = Astro.cookies.get('mailbox')?.json() as MailboxSession
 
 // eslint-disable-next-line antfu/no-top-level-await
-const verifed = await jose.jwtVerify(
-  savedMailbox.token,
-  encodeJWTSecret(Astro.locals.runtime.env.JWT_SECRET),
-).then(() => true).catch(() => false)
+const verifed = await jose
+  .jwtVerify(
+    savedMailbox.token,
+    encodeJWTSecret(Astro.locals.runtime.env.JWT_SECRET),
+  )
+  .then(() => true)
+  .catch(() => false)
 ---
 
 <div class="w-full md:max-w-[350px] mb-4">
@@ -38,10 +42,14 @@ const verifed = await jose.jwtVerify(
   {
     !verifed && (
       <h1 class="text-destructive font-black text-xl mb-4">
-        Failed to verify your mailbox. Your mailbox token may be expired or invalid.
+        Failed to verify your mailbox. Your mailbox token may be expired or
+        invalid.
       </h1>
     )
   }
   <ExitButton client:only="react" />
-  {hasMails && <DeleteEvereyThingButton client:only="react" />}
+  <div class="grid w-full grid-cols-2 gap-2">
+    <SenderButton client:only="react" />
+    <DeleteEvereyThingButton isDisabled={!hasMails} client:only="react" />
+  </div>
 </div>
