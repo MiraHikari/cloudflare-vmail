@@ -130,7 +130,7 @@ export const server = {
         encodeJWTSecret(ctx.locals.runtime.env.JWT_SECRET),
       )
 
-      return await DAO.deleteAllEmailsByMessageTo(db, mailbox.token)
+      return await DAO.deleteAllEmailsByMessageTo(db, mailbox.mailbox)
     },
   }),
   // sendEmail: defineAction({
