@@ -39,8 +39,10 @@ TURNSTILE_SITE_KEY="key"
 MAIL_DOMAIN="domain1,domain2"
 COOKIE_EXPIRES_IN_SECONDS=86400
 SITE_DESCRIPTION="Virtual temporary Email. Privacy friendly, Valid for 1 day, AD friendly, 100% Run on Cloudflare, Fully Open Source, Based on CLOUD."
+JWT_SECRET="what-the-fuck.sbs_hhhhhhhhhhhhhhhhh"
 
 [[d1_databases]]
+# DO NOT CHANGE BINDING VALUE
 binding = "DB"
 database_name = "name"
 database_id = "id"
