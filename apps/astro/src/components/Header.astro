@@ -1,0 +1,28 @@
+---
+import { Icon } from '@iconify/react'
+import { Button } from './ui/button'
+---
+
+<div
+  class="fixed top-0 z-20 h-20 w-full px-5 backdrop-blur-xl md:px-10 text-primary flex items-center justify-between first-letter:shadow-sm"
+
+>
+  <a href="/" class="font-bold flex items-center justify-center gap-3">
+    <span>MiraHikari's Vmail</span>
+  </a>
+  <a href="/about" class="ml-auto text-sm md:text-base hidden md:block">
+    About
+  </a>
+  <a href="/privacy" class="ml-3 md:ml-8 text-sm md:text-base hidden md:block">
+    Privacy
+  </a>
+  <a href="/terms" class="ml-3 md:ml-8 text-sm md:text-base hidden md:block">
+    Terms
+  </a>
+  <a class="ml-3 md:ml-8" target="_blank" href="https://github.com/MiraHikari/vmail-astro">
+    <Button variant="default">
+      <Icon icon="logos:github-icon" client:load />
+      <div class="ml-1.5 text-sm">Star</div>
+    </Button>
+  </a>
+</div>
