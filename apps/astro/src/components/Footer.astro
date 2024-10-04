@@ -2,6 +2,8 @@
 import { GitHubLogoIcon } from '@radix-ui/react-icons'
 import { ModeToggle } from './ModeToggle'
 import { Button } from './ui/button'
+
+const Env = Astro.locals.runtime.env
 ---
 
 <div
@@ -9,7 +11,7 @@ import { Button } from './ui/button'
 
 >
   <a href="/" class="text-xl font-black leading-none select-none logo">
-    MiraHikari's Vmail
+    {Env.SITE_NAME}
   </a>
   <p
     class="mt-4 text-sm text-secondary-foregrund sm:ml-4 sm:pl-4 sm:border-l sm:border-border sm:mt-0"

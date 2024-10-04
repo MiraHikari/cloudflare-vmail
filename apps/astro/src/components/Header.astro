@@ -1,6 +1,8 @@
 ---
 import { Icon } from '@iconify/react'
 import { Button } from './ui/button'
+
+const Env = Astro.locals.runtime.env
 ---
 
 <div
@@ -8,7 +10,7 @@ import { Button } from './ui/button'
 
 >
   <a href="/" class="font-bold flex items-center justify-center gap-3">
-    <span>MiraHikari's Vmail</span>
+    <span>{Env.SITE_NAME}</span>
   </a>
   <a href="/about" class="ml-auto text-sm md:text-base hidden md:block">
     About
@@ -26,7 +28,11 @@ import { Button } from './ui/button'
 
   >
     <Button variant="default">
-      <Icon icon="logos:github-icon" className="[&_path]:!fill-primary-foreground" client:load />
+      <Icon
+        icon="logos:github-icon"
+        className="[&_path]:!fill-primary-foreground"
+        client:load
+      />
       <div class="ml-1.5 text-sm">Star</div>
     </Button>
   </a>

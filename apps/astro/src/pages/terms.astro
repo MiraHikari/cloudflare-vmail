@@ -27,7 +27,7 @@ const Env = Astro.locals.runtime.env
         to obtain a temporary email address without disclosing any personal information,
         ensuring the protection of your privacy. Our service supports the selection
         of multiple domain names, providing you with the convenience of using it
-        in various scenarios. Additionally, MiraHikari's Vmail operates on the Cloudflare
+        in various scenarios. Additionally, {Env.SITE_NAME} operates on the Cloudflare
         network, guaranteeing a super-fast experience.
       </p>
 
@@ -85,8 +85,7 @@ const Env = Astro.locals.runtime.env
         5. Limitation of Liability
       </h2>
       <p class="mt-4">
-        To the maximum extent permitted by law, in no event shall MiraHikari's
-        Vmail or its affiliates be liable for any indirect, incidental, special,
+        To the maximum extent permitted by law, in no event shall {Env.SITE_NAME} or its affiliates be liable for any indirect, incidental, special,
         consequential, or punitive damages, including without limitation, loss
         of profits, data, use, goodwill, or other intangible losses, resulting
         from your access to or use of {Env.SITE_NAME} or any content or services

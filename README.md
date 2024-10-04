@@ -39,6 +39,7 @@ TURNSTILE_SECRET="TURNSTILE_SECRET"
 TURNSTILE_SITE_KEY="TURNSTILE_SITE_KEY"
 MAIL_DOMAIN="what-the-fuck.sbs"
 COOKIE_EXPIRES_IN_SECONDS=86400
+SITE_NAME="MiraHikari's Vmail"
 SITE_DESCRIPTION="Virtual temporary Email. Privacy friendly, Valid for 1 day, AD friendly, 100% Run on Cloudflare, Fully Open Source, Based on CLOUD."
 JWT_SECRET="JWT_SECRET"
 # MAILGUN_BASE_URL=""
