@@ -1,4 +1,5 @@
 ---
+import Star from '@/components/Star.astro'
 import { Button } from '@/components/ui/button'
 import Layout from '@/layouts/Layout.astro'
 import { Icon } from '@iconify/react'
@@ -19,10 +20,7 @@ const Env = Astro.locals.runtime.env
       <p class="mt-8">
         <strong>{Env.SITE_NAME}</strong> is a Virtual temporary email service.
       </p>
-      <Button variant="default" className="mt-4">
-        <Icon icon="logos:github-icon" client:load />
-        <div class="ml-1.5 text-sm">Star</div>
-      </Button><span class="ml-4">Support my work by giving me a star.</span>
+      <Star /><span class="ml-4">Support my work by giving me a star.</span>
       <p class="mt-4">
         You can get a temporary email without revealing any personal
         information, which greatly protects your privacy.{' '}

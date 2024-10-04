@@ -1,5 +1,6 @@
 ---
 import { Icon } from '@iconify/react'
+import Star from './Star.astro'
 import { Button } from './ui/button'
 
 const Env = Astro.locals.runtime.env
@@ -27,13 +28,6 @@ const Env = Astro.locals.runtime.env
     href="https://github.com/MiraHikari/cloudflare-vmail"
 
   >
-    <Button variant="default">
-      <Icon
-        icon="logos:github-icon"
-        className="[&_path]:!fill-primary-foreground"
-        client:load
-      />
-      <div class="ml-1.5 text-sm">Star</div>
-    </Button>
+    <Star />
   </a>
 </div>
