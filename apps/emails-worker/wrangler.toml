@@ -42,8 +42,8 @@ enabled = true
 
 [[d1_databases]]
 binding = "DB"
-database_name = "prod-emails_forward"
-database_id = "fe17b2fd-b691-4ca3-b913-c070e2845fba"
+database_name = "..."
+database_id = "..."
 
 # Bind a dispatch namespace. Use Workers for Platforms to deploy serverless functions programmatically on behalf of your customers.
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#dispatch-namespace-bindings-workers-for-platforms
