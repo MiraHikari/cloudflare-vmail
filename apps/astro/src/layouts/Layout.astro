@@ -1,4 +1,5 @@
 ---
+import ArtPlums from '@/components/ArtPlums'
 import Footer from '@/components/Footer.astro'
 import Header from '@/components/Header.astro'
 import { Toaster } from '@/components/ui/toaster'
@@ -13,6 +14,7 @@ const { title, description } = Astro.props
 ---
 
 <BaseLayout title={title} description={description}>
+  <ArtPlums client:only="react" />
   <div class="mx-auto min-h-screen flex flex-col bg-background">
     <Header />
     <slot />
