@@ -3,6 +3,7 @@ import { actions } from 'astro:actions'
 import { navigate } from 'astro:transitions/client'
 import { Button } from './ui/button'
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from './ui/drawer'
+import { ToastAction } from './ui/toast'
 
 export default function DeleteEveryThingButton({ isDisabled }: { isDisabled: boolean }) {
   return (
@@ -40,12 +41,13 @@ export default function DeleteEveryThingButton({ isDisabled }: { isDisabled: boo
                 })
               }
 
-              toast({
+              return toast({
                 title: 'Deleted',
                 description: `All datas deleted`,
+                action: (
+                  <ToastAction altText="Reload page to update the data" onClick={() => navigate('/')}>Reload Page</ToastAction>
+                ),
               })
-
-              navigate('/')
             }}
             >
               Confirm

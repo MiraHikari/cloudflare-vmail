@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { Button } from './ui/button'
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from './ui/drawer'
 import { Input } from './ui/input'
+import { ToastAction } from './ui/toast'
 
 export default function PasswordDrawer() {
   const [id, setId] = useState('')
@@ -44,11 +45,13 @@ export default function PasswordDrawer() {
                 })
               }
 
-              toast({
+              return toast({
                 title: 'Logged in',
                 description: `You can now use the email account: ${data}`,
+                action: (
+                  <ToastAction altText="Reload page to receive emails" onClick={() => navigate('/')}>Reload Page</ToastAction>
+                ),
               })
-              navigate('/')
             }}
             >
               Submit
