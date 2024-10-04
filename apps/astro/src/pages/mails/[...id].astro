@@ -11,11 +11,13 @@ const { id } = Astro.params as { id: string }
 const { data, error } = await Astro.callAction(actions.getEmail, {
   id,
 })
+
+const Env = Astro.locals.runtime.env
 ---
 
 <Layout
-  title={`${data?.id || 'ERROR'} - MiraHikari's VMail`}
-  description="Virtual temporary Email. Privacy friendly, Valid for 1 day, AD friendly, 100% Run on Cloudflare, Fully Open Source, Based on CLOUD"
+  title={`${data?.id || 'ERROR'} - ${Env.SITE_NAME}`}
+  description={Env.SITE_DESCRIPTION}
 
 >
   <div class="mt-24 mx-6 md:mx-10 flex flex-1 flex-col p-2 gap-10">

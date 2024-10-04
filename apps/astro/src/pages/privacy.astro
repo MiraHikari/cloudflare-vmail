@@ -1,20 +1,22 @@
 ---
 import Layout from '@/layouts/Layout.astro'
+
+const Env = Astro.locals.runtime.env
 ---
 
 <Layout
-  title="Privacy Policy - MiraHikari's Vmail"
-  description={Astro.locals.runtime.env.SITE_DESCRIPTION}
+  title={`Privacy Policy - ${Env.SITE_NAME}`}
+  description={Env.SITE_DESCRIPTION}
 
 >
-  <div class="mx-10 mt-24 text-primary">
+  <div class="mx-10 mt-24 text-primary px-7 py-10 of-x-hidden">
     <div class="max-w-[1400px]">
       <h1 class="text-4xl font-bold" id="about">Privacy Policy</h1>
       <p class="mt-8">
-        At MiraHikari's Vmail, we value the privacy of our users and are
-        committed to protecting their personal information. This Privacy Policy
-        outlines the practices we follow regarding the collection, use, storage,
-        and deletion of data on our one-time email website.
+        At {Env.SITE_NAME}, we value the privacy of our users and are committed
+        to protecting their personal information. This Privacy Policy outlines
+        the practices we follow regarding the collection, use, storage, and
+        deletion of data on our one-time email website.
       </p>
 
       <h2 class="mt-8 text-2xl font-bold" id="Collection of Information">

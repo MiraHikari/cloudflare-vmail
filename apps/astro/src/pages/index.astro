@@ -11,9 +11,11 @@ const savedMailbox = Astro.cookies.get('mailbox')?.json() as MailboxSession
 // eslint-disable-next-line antfu/no-top-level-await
 const mails = (await Astro.callAction(actions.getEmailsByMessageToWho, {}))
   ?.data
+
+const Env = Astro.locals.runtime.env
 ---
 
-<Layout title="Inbox - MiraHikari's Vmail" description={Astro.locals.runtime.env.SITE_DESCRIPTION}>
+<Layout title={`Inbox - ${Env.SITE_NAME}`} description={Env.SITE_DESCRIPTION}>
   <div
     class="h-full flex flex-col gap-4 md:flex-row justify-center items-start mt-24 mx-6 md:mx-10"
 
