@@ -10,7 +10,7 @@ function LoggedFormBtn() {
           <Button variant="secondary" className="py-2.5 mt-4 rounded-md hover:opacity-90 disabled:cursor-not-allowed disabled:bg-zinc-500max-w-[300px]">Send an email</Button>
         </TooltipTrigger>
         <TooltipContent>
-          <p>WIP... It's not work now.</p>
+          <p>WIP... It doesn't work now.</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
