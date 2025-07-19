@@ -1,12 +1,9 @@
-import { useToast } from '@/hooks/use-toast'
 import { actions } from 'astro:actions'
 import { navigate } from 'astro:transitions/client'
 import { Button } from './ui/button'
-import { ToastAction } from './ui/toast'
+import { toast } from "sonner"
 
 export default function ExitButton() {
-  const { toast } = useToast()
-
   return (
     <Button
       variant="default"

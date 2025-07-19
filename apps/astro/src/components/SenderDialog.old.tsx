@@ -1,4 +1,4 @@
-import { toast } from '@/hooks/use-toast'
+import { toast } from "sonner"
 import { zodResolver } from '@hookform/resolvers/zod'
 import { actions } from 'astro:actions'
 import { useForm } from 'react-hook-form'

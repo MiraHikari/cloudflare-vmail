@@ -1,4 +1,3 @@
-import { useToast } from '@/hooks/use-toast'
 import { Icon } from '@iconify/react'
 import { actions } from 'astro:actions'
 import { navigate } from 'astro:transitions/client'
@@ -6,11 +5,10 @@ import { useState } from 'react'
 import { Button } from './ui/button'
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from './ui/drawer'
 import { Input } from './ui/input'
-import { ToastAction } from './ui/toast'
+import { toast } from "sonner"
 
 export default function PasswordDrawer() {
   const [id, setId] = useState('')
-  const { toast } = useToast()
 
   return (
     <Drawer>
@@ -38,18 +36,14 @@ export default function PasswordDrawer() {
               })
 
               if (error) {
-                return toast({
-                  variant: 'destructive',
-                  title: 'Uh oh! Something went wrong.',
+                return toast.error('Uh oh! Something went wrong.', {
                   description: error.message,
                 })
               }
 
-              return toast({
-                title: 'Mailbox Retrieved',
-                description: `Your email account has been recovered: ${data}`,
+              return toast.success(`Your email account has been recovered: ${data}`, {
                 action: (
-                  <ToastAction altText="Reload page to receive emails" onClick={() => navigate('/')}>Reload Page</ToastAction>
+                  <Button variant="outline" onClick={() => navigate('/')}>Reload Page</Button>
                 ),
               })
             }}

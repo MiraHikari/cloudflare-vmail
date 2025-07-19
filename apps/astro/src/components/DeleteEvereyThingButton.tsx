@@ -1,9 +1,8 @@
-import { toast } from '@/hooks/use-toast'
+import { toast } from "sonner"
 import { actions } from 'astro:actions'
 import { navigate } from 'astro:transitions/client'
 import { Button } from './ui/button'
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from './ui/drawer'
-import { ToastAction } from './ui/toast'
 
 export default function DeleteEveryThingButton({ isDisabled }: { isDisabled: boolean }) {
   return (
@@ -34,18 +33,15 @@ export default function DeleteEveryThingButton({ isDisabled }: { isDisabled: boo
               const { error } = await actions.deleteAllEmailsByMessageTo()
 
               if (error) {
-                return toast({
-                  variant: 'destructive',
-                  title: 'Uh oh! Something went wrong.',
+                return toast.error('Uh oh! Something went wrong.', {
                   description: error.message,
                 })
               }
 
-              return toast({
-                title: 'Deleted',
+              return toast.success('Deleted', {
                 description: `All datas deleted`,
                 action: (
-                  <ToastAction altText="Reload page to update the data" onClick={() => navigate('/')}>Reload Page</ToastAction>
+                  <Button variant="outline" onClick={() => navigate('/')}>Reload Page</Button>
                 ),
               })
             }}
