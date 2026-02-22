@@ -4,10 +4,7 @@ import { useState } from 'react'
 import { Button } from './ui/button'
 
 interface CopyButtonProps
-  extends DetailedHTMLProps<
-    ButtonHTMLAttributes<HTMLButtonElement>,
-    HTMLButtonElement
-  > {
+  extends DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> {
   content: string
 }
 
@@ -26,28 +23,33 @@ export default function CopyButton({ content, ...props }: CopyButtonProps) {
     success: 'Copied!',
   }
 
-  function copy() {
-    if (navigator.clipboard) {
-      navigator.clipboard
-        .writeText(content)
-        .then(() => {
-          setStatus('success')
-          setTimeout(() => setStatus('idle'), 2000)
-        })
-        .catch(() => {
-          setStatus('error')
-          setTimeout(() => setStatus('idle'), 2000)
-        })
+  async function copy() {
+    // Validate content
+    if (!content || typeof content !== 'string') {
+      setStatus('error')
+      setTimeout(() => setStatus('idle'), 2000)
+      return
     }
-    else {
-      // Fallback for older browsers
+
+    try {
+      // Try modern clipboard API first
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(content)
+        setStatus('success')
+        setTimeout(() => setStatus('idle'), 2000)
+        return
+      }
+
+      // Fallback for older browsers or non-secure contexts
+      const textArea = document.createElement('textarea')
+      textArea.value = content
+      textArea.style.position = 'fixed'
+      textArea.style.left = '-999999px'
+      textArea.style.top = '-999999px'
+      textArea.setAttribute('aria-hidden', 'true')
+      document.body.appendChild(textArea)
+
       try {
-        const textArea = document.createElement('textarea')
-        textArea.value = content
-        textArea.style.position = 'fixed'
-        textArea.style.left = '-999999px'
-        textArea.style.top = '-999999px'
-        document.body.appendChild(textArea)
         textArea.focus()
         textArea.select()
         const successful = document.execCommand('copy')
@@ -55,17 +57,17 @@ export default function CopyButton({ content, ...props }: CopyButtonProps) {
 
         if (successful) {
           setStatus('success')
-          setTimeout(() => setStatus('idle'), 2000)
-        }
-        else {
+        } else {
           setStatus('error')
-          setTimeout(() => setStatus('idle'), 2000)
         }
+      } catch (err) {
+        document.body.removeChild(textArea)
+        throw err
       }
-      catch {
-        setStatus('error')
-        setTimeout(() => setStatus('idle'), 2000)
-      }
+    } catch {
+      setStatus('error')
+    } finally {
+      setTimeout(() => setStatus('idle'), 2000)
     }
   }
 

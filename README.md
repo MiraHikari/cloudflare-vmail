@@ -11,6 +11,7 @@ Inspired by **[oiov/vmail](https://github.com/oiov/vmail)**. This project has be
 ## ✨ Features
 
 ### Core Features
+
 - 🔒 **Privacy First** - No registration required, anonymous by default
 - 📧 **Email Management** - Receive and view emails instantly
 - 🔐 **Mailbox Claiming** - Optionally claim mailboxes with password protection
@@ -21,6 +22,7 @@ Inspired by **[oiov/vmail](https://github.com/oiov/vmail)**. This project has be
 - ⚡ **Edge Performance** - Lightning fast with Cloudflare's global network
 
 ### Technical Features
+
 - 🚀 **100% Serverless** - Runs entirely on Cloudflare (Workers + Pages + D1)
 - 🛡️ **Bot Protection** - Integrated Cloudflare Turnstile
 - 🎯 **Type Safety** - Full TypeScript implementation
@@ -45,6 +47,7 @@ Inspired by **[oiov/vmail](https://github.com/oiov/vmail)**. This project has be
 ```
 
 **Tech Stack:**
+
 - **Frontend**: Astro 5.14 + React 19 + Tailwind CSS 4
 - **Email Worker**: Cloudflare Email Worker + postal-mime
 - **Database**: Cloudflare D1 (SQLite)
@@ -197,11 +200,13 @@ emails/
 ### Mailbox Types
 
 **Temporary Mailbox**
+
 - No registration required
 - Valid for 24 hours (configurable)
 - Anyone with the mailbox ID can access
 
 **Claimed Mailbox**
+
 - Password protected
 - Permanent storage
 - Private and secure
@@ -209,6 +214,7 @@ emails/
 ### OTP Detection
 
 Automatically detects and extracts verification codes from emails:
+
 - 6-digit codes (123456)
 - Alphanumeric codes (A1B2C3)
 - Time-sensitive OTP formats
@@ -291,6 +297,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📧 Support
 
 If you have any questions or need help, please:
+
 - Open an issue on GitHub
 - Check the [documentation](docs/)
 - Review existing issues and discussions

@@ -65,8 +65,7 @@ export function Banner({
   learnMoreUrl: _learnMoreUrl,
   variant = 'default',
 }: BannerProps) {
-  if (!show)
-    return null
+  if (!show) return null
 
   const variants = {
     default: {
@@ -107,7 +106,7 @@ export function Banner({
     <div
       className={cn(
         'relative isolate flex flex-col justify-between gap-3 overflow-hidden rounded-lg border py-3 pl-4 pr-12 sm:flex-row sm:items-center sm:py-2',
-        variantStyles.container,
+        variantStyles.container
       )}
     >
       <Grid
@@ -115,7 +114,7 @@ export function Banner({
         patternOffset={[0, -1]}
         className={cn(
           'mix-blend-overlay [mask-image:linear-gradient(to_right,black,transparent)] md:[mask-image:linear-gradient(to_right,black_60%,transparent)]',
-          variantStyles.grid,
+          variantStyles.grid
         )}
       />
 
@@ -124,7 +123,7 @@ export function Banner({
           <div
             className={cn(
               'hidden rounded-full border p-1 shadow-sm sm:block',
-              variantStyles.iconContainer,
+              variantStyles.iconContainer
             )}
           >
             {icon}
@@ -138,7 +137,7 @@ export function Banner({
           type="button"
           className={cn(
             'whitespace-nowrap rounded-md border px-3 py-1 text-sm transition-colors',
-            variantStyles.button,
+            variantStyles.button
           )}
           onClick={action.onClick}
         >
@@ -150,7 +149,7 @@ export function Banner({
         type="button"
         className={cn(
           'absolute inset-y-0 right-2.5 p-1 text-sm transition-colors',
-          variantStyles.closeButton,
+          variantStyles.closeButton
         )}
         onClick={onHide}
       >

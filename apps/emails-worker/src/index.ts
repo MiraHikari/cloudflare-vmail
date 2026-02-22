@@ -11,12 +11,12 @@
  * Learn more at https://developers.cloudflare.com/workers/
  */
 
-import PostalMime from "postal-mime";
+import PostalMime from 'postal-mime';
 
-import { InsertEmail, insertEmailSchema } from "database/schema"
-import { insertEmail } from "database/dao"
-import { getCloudflareD1 } from "database/db"
-import { nanoid } from "nanoid";
+import { InsertEmail, insertEmailSchema } from 'database/schema';
+import { insertEmail } from 'database/dao';
+import { getCloudflareD1 } from 'database/db';
+import { nanoid } from 'nanoid';
 
 export default {
 	async email(message: ForwardableEmailMessage, env: Env, ctx: ExecutionContext): Promise<void> {

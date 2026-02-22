@@ -21,10 +21,7 @@ async function getMailboxSession(ctx: ActionAPIContext): Promise<MailboxSession>
     })
   }
 
-  await jose.jwtVerify(
-    mailbox.token,
-    encodeJWTSecret(ctx.locals.runtime.env.JWT_SECRET),
-  )
+  await jose.jwtVerify(mailbox.token, encodeJWTSecret(ctx.locals.runtime.env.JWT_SECRET))
 
   return mailbox
 }
@@ -72,29 +69,38 @@ export const server = {
     accept: 'form',
     input: z.object({
       'cf-turnstile-response': z.string(),
-      'domain': z.string(),
+      domain: z.string(),
     }),
     handler: async (input, ctx) => {
-      const formData = new FormData()
-      formData.append('secret', ctx.locals.runtime.env.TURNSTILE_SECRET)
-      formData.append('response', input['cf-turnstile-response'])
+      const Env = ctx.locals.runtime.env
 
-      const result = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-        body: formData,
-        method: 'POST',
-      })
+      // Check if we're in development mode
+      const isDev = Env.DEV_MODE === 'true'
+      const isTurnstileDisabled = isDev && Env.TURNSTILE_SECRET === 'dev-secret'
 
-      const outcome = z.object({ success: z.boolean() }).parse(await result.json())
+      // Skip turnstile verification in dev mode
+      if (!isTurnstileDisabled) {
+        const formData = new FormData()
+        formData.append('secret', Env.TURNSTILE_SECRET)
+        formData.append('response', input['cf-turnstile-response'])
 
-      if (!outcome.success) {
-        throw new ActionError({
-          code: 'UNAUTHORIZED',
-          message: 'complete the turnstile challenge',
+        const result = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+          body: formData,
+          method: 'POST',
         })
+
+        const outcome = z.object({ success: z.boolean() }).parse(await result.json())
+
+        if (!outcome.success) {
+          throw new ActionError({
+            code: 'UNAUTHORIZED',
+            message: 'complete the turnstile challenge',
+          })
+        }
       }
 
       const newMailbox = generateNewMailAddr(input.domain)
-      const token = await genToken(newMailbox, ctx.locals.runtime.env.JWT_SECRET)
+      const token = await genToken(newMailbox, Env.JWT_SECRET)
       setMailboxSession(ctx, { mailbox: newMailbox, token })
 
       return newMailbox
@@ -157,7 +163,7 @@ export const server = {
           mailbox: '',
           token: '',
         },
-        { maxAge: 1, path: '/' },
+        { maxAge: 1, path: '/' }
       )
     },
   }),

@@ -45,3 +45,12 @@ lerna-debug.log*
 # Testing
 coverage/
 .nyc_output/
+
+# Husky
+.husky/_
+
+# Factory
+.factory/
+
+# Claude
+.claude/

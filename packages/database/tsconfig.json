@@ -5,12 +5,6 @@
     "rootDir": ".",
     "tsBuildInfoFile": "./.tsbuildinfo"
   },
-  "include": [
-    "*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "drizzle"
-  ]
+  "include": ["*.ts"],
+  "exclude": ["node_modules", "dist", "drizzle"]
 }

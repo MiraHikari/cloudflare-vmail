@@ -11,15 +11,29 @@ import { MailboxAuth } from '@/components/MailboxAuth'
 import PageHeader from '@/components/PageHeader.astro'
 import Layout from '@/layouts/Layout.astro'
 
+const Env = Astro.locals.runtime.env
+const isDev = import.meta.env.DEV || Env.DEV_MODE === 'true'
+
 const savedMailbox = Astro.cookies.get('mailbox')?.json() as MailboxSession
 
-const mails = savedMailbox
-  ? (await Astro.callAction(actions.getEmailsByMessageToWho, {}))?.data
-  : null
+// Use mock data in development if enabled
+const useMockData = isDev && Env.USE_MOCK_DATA === 'true'
 
-// Check if mailbox is claimed
+// Check if Turnstile is enabled
+const isTurnstileEnabled = !isDev || Env.TURNSTILE_SECRET !== 'dev-secret'
+
+let mails = null
 let isClaimed = false
-if (savedMailbox?.mailbox) {
+
+if (useMockData && savedMailbox?.mailbox) {
+  // Import mock data generator
+  const { generateMockEmails } = await import('@/lib/dev-mock')
+  mails = generateMockEmails(parseInt(Env.MOCK_EMAIL_COUNT || '5'), savedMailbox.mailbox)
+  isClaimed = false
+} else if (savedMailbox?.mailbox) {
+  mails = (await Astro.callAction(actions.getEmailsByMessageToWho, {}))?.data
+
+  // Check if mailbox is claimed
   const claimedResult = await Astro.callAction(actions.isMailboxClaimed, {
     address: savedMailbox.mailbox,
   })
@@ -27,13 +41,8 @@ if (savedMailbox?.mailbox) {
 }
 
 // Get featured features
-const allFeatures = await getCollection('features')
-const featuredFeatures = allFeatures
-  .filter(f => f.data.featured)
-  .sort((a, b) => a.data.order - b.data.order)
-  .slice(0, 4)
-
-const Env = Astro.locals.runtime.env
+// Show dev mode banner in development
+const showDevBanner = isDev
 ---
 
 <Layout title={`Inbox - ${Env.SITE_NAME}`} description={String(Env.SITE_DESCRIPTION)}>
@@ -42,44 +51,78 @@ const Env = Astro.locals.runtime.env
     description="Privacy-friendly temporary email service"
   />
 
+  {/* Development Mode Banner */}
+  {
+    showDevBanner && (
+      <div class="mx-auto px-6 md:px-28 pt-4">
+        <div class="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 flex items-center gap-3">
+          <svg
+            class="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+            />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+            />
+          </svg>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-amber-800 dark:text-amber-200">Development Mode</p>
+            <p class="text-xs text-amber-700 dark:text-amber-300">
+              {useMockData ? 'Using mock data • ' : ''}
+              Turnstile {isTurnstileEnabled ? 'enabled' : 'disabled'}
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   <main class="mx-auto px-6 md:px-28 py-6">
-    <!-- Service Notice Banner -->
+    {/* Service Notice Banner */}
     <div class="mb-6">
       <DomainNoticeBanner client:load />
     </div>
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Left Sidebar - Information & Controls -->
+      {/* Left Sidebar - Information & Controls */}
       <div class="lg:col-span-1 space-y-6">
         <Infomation />
 
-        <!-- Mailbox Management Card -->
+        {/* Mailbox Management Card */}
         <div class="bg-card border border-border rounded-lg shadow-sm">
           <div class="p-6">
             {
-              !savedMailbox?.mailbox
-? (
+              !savedMailbox?.mailbox ? (
                 <div class="space-y-6">
-                  <!-- Create New Mailbox -->
+                  {/* Create New Mailbox */}
                   <div>
                     <h3 class="text-lg font-semibold text-card-foreground mb-4">Create Mailbox</h3>
                     <GenerateNewMailboxForm />
                   </div>
 
-                  <!-- Divider -->
+                  {/* Divider */}
                   <div class="relative">
                     <div class="absolute inset-0 flex items-center">
-                      <div class="w-full border-t border-border"></div>
+                      <div class="w-full border-t border-border" />
                     </div>
                     <div class="relative flex justify-center text-xs uppercase">
                       <span class="bg-card px-2 text-muted-foreground">Or</span>
                     </div>
                   </div>
 
-                  <!-- Login to Existing Mailbox -->
+                  {/* Login to Existing Mailbox */}
                   <MailboxAuth client:load />
                 </div>
-              )
-: (
+              ) : (
                 <div>
                   <h3 class="text-lg font-semibold text-card-foreground mb-4">
                     {isClaimed ? 'Your Mailbox' : 'Temporary Mailbox'}
@@ -92,36 +135,45 @@ const Env = Astro.locals.runtime.env
         </div>
       </div>
 
-      <!-- Right Content - Inbox -->
+      {/* Right Content - Inbox */}
       <div class="lg:col-span-2">
-        <div
-          class="bg-card border border-border rounded-lg shadow-sm h-full min-h-[600px] p-6"
-        >
-          {savedMailbox?.mailbox
-? (
-            <Inbox
-              mails={mails || []}
-              mailboxAddress={savedMailbox.mailbox}
-              isClaimed={isClaimed}
-              client:load
-            />
-          )
-: (
-            <div class="flex flex-col items-center justify-center h-full text-center">
-              <div class="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-6">
-                <svg class="h-10 w-10 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
+        <div class="bg-card border border-border rounded-lg shadow-sm h-full min-h-[600px] p-6">
+          {
+            savedMailbox?.mailbox ? (
+              <Inbox
+                mails={mails || []}
+                mailboxAddress={savedMailbox.mailbox}
+                isClaimed={isClaimed}
+                client:load
+              />
+            ) : (
+              <div class="flex flex-col items-center justify-center h-full text-center">
+                <div class="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-6">
+                  <svg
+                    class="h-10 w-10 text-muted-foreground"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    />
+                  </svg>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Welcome to VMails</h3>
+                <p class="text-muted-foreground max-w-md mb-6">
+                  Create a temporary mailbox to receive emails instantly, or login to your claimed
+                  mailbox.
+                </p>
+                <div class="flex gap-2 text-sm text-muted-foreground">
+                  <span>Get started by creating or logging into a mailbox</span>
+                </div>
               </div>
-              <h3 class="text-xl font-semibold mb-2">Welcome to VMails</h3>
-              <p class="text-muted-foreground max-w-md mb-6">
-                Create a temporary mailbox to receive emails instantly, or login to your claimed mailbox.
-              </p>
-              <div class="flex gap-2 text-sm text-muted-foreground">
-                <span>Get started by creating or logging into a mailbox</span>
-              </div>
-            </div>
-          )}
+            )
+          }
         </div>
       </div>
     </div>

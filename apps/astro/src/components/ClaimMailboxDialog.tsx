@@ -49,16 +49,13 @@ export function ClaimMailboxDialog({ mailboxAddress }: ClaimMailboxDialogProps) 
 
       if (claimError) {
         setError(claimError.message)
-      }
-      else {
+      } else {
         setOpen(false)
         window.location.reload()
       }
-    }
-    catch {
+    } catch {
       setError('Failed to claim mailbox. Please try again.')
-    }
-    finally {
+    } finally {
       setLoading(false)
     }
   }
@@ -93,7 +90,7 @@ export function ClaimMailboxDialog({ mailboxAddress }: ClaimMailboxDialogProps) 
               type="password"
               placeholder="At least 6 characters"
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
             />
           </div>
 
@@ -104,7 +101,7 @@ export function ClaimMailboxDialog({ mailboxAddress }: ClaimMailboxDialogProps) 
               type="password"
               placeholder="Re-enter your password"
               value={confirmPassword}
-              onChange={e => setConfirmPassword(e.target.value)}
+              onChange={(e) => setConfirmPassword(e.target.value)}
             />
           </div>
 
@@ -118,8 +115,8 @@ export function ClaimMailboxDialog({ mailboxAddress }: ClaimMailboxDialogProps) 
           <Alert>
             <Lock className="h-4 w-4" />
             <AlertDescription>
-              Once claimed, this mailbox will require your password to access. Make sure to
-              remember it!
+              Once claimed, this mailbox will require your password to access. Make sure to remember
+              it!
             </AlertDescription>
           </Alert>
         </div>

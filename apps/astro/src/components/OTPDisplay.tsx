@@ -10,8 +10,7 @@ interface OTPDisplayProps {
 export function OTPDisplay({ codes }: OTPDisplayProps) {
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
 
-  if (codes.length === 0)
-    return null
+  if (codes.length === 0) return null
 
   const copyCode = async (code: string) => {
     await navigator.clipboard.writeText(code)
@@ -47,13 +46,11 @@ export function OTPDisplay({ codes }: OTPDisplayProps) {
                   className="h-7 w-7 p-0"
                   onClick={() => copyCode(code)}
                 >
-                  {copiedCode === code
-                    ? (
-                        <Check className="h-4 w-4 text-green-600" />
-                      )
-                    : (
-                        <Copy className="h-4 w-4" />
-                      )}
+                  {copiedCode === code ? (
+                    <Check className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
             ))}

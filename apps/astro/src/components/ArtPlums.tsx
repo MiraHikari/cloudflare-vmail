@@ -21,9 +21,9 @@ const CanvasComponent: React.FC = () => {
   const initCanvas = (canvas: HTMLCanvasElement, width = 400, height = 400, _dpi?: number) => {
     const ctx = canvas.getContext('2d')!
     const dpr = window.devicePixelRatio || 1
-    // @ts-expect-error new in webkit and moz
-    const bsr = ctx.webkitBackingStorePixelRatio || ctx.mozBackingStorePixelRatio || ctx.msBackingStorePixelRatio || ctx.oBackingStorePixelRatio || ctx.backingStorePixelRatio || 1
-    const dpi = _dpi || dpr / bsr
+    // Backing store ratio is deprecated and not needed for modern browsers
+    // Using dpr directly for high DPI displays
+    const dpi = _dpi || dpr
 
     canvas.style.width = `${width}px`
     canvas.style.height = `${height}px`
@@ -62,15 +62,12 @@ const CanvasComponent: React.FC = () => {
       const rad1 = rad + Math.random() * r15
       const rad2 = rad - Math.random() * r15
 
-      if (nx < -100 || nx > size.width + 100 || ny < -100 || ny > size.height + 100)
-        return
+      if (nx < -100 || nx > size.width + 100 || ny < -100 || ny > size.height + 100) return
 
       const rate = counter.value <= MIN_BRANCH ? 0.8 : 0.5
 
-      if (Math.random() < rate)
-        steps.push(() => step(nx, ny, rad1, counter))
-      if (Math.random() < rate)
-        steps.push(() => step(nx, ny, rad2, counter))
+      if (Math.random() < rate) steps.push(() => step(nx, ny, rad1, counter))
+      if (Math.random() < rate) steps.push(() => step(nx, ny, rad2, counter))
     }
 
     const frame = () => {
@@ -83,8 +80,7 @@ const CanvasComponent: React.FC = () => {
       }
 
       prevSteps.forEach((i) => {
-        if (Math.random() < 0.5)
-          steps.push(i)
+        if (Math.random() < 0.5) steps.push(i)
         else i()
       })
 
@@ -102,8 +98,7 @@ const CanvasComponent: React.FC = () => {
         () => step(-5, randomMiddle() * size.height, 0),
         () => step(size.width + 5, randomMiddle() * size.height, r180),
       ]
-      if (size.width < 500)
-        steps = steps.slice(0, 2)
+      if (size.width < 500) steps = steps.slice(0, 2)
       setStopped(false)
       requestAnimationFrame(frame)
     }
@@ -114,7 +109,11 @@ const CanvasComponent: React.FC = () => {
   return (
     <div
       className="fixed top-0 bottom-0 left-0 right-0 print:hidden"
-      style={{ pointerEvents: 'none', maskImage: 'radial-gradient(circle, transparent, black)', WebkitMaskImage: 'radial-gradient(circle, transparent, black)' }}
+      style={{
+        pointerEvents: 'none',
+        maskImage: 'radial-gradient(circle, transparent, black)',
+        WebkitMaskImage: 'radial-gradient(circle, transparent, black)',
+      }}
     >
       <canvas ref={el} width="400" height="400" />
     </div>

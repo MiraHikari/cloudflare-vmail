@@ -34,16 +34,13 @@ export function MailboxAuth() {
 
       if (loginError) {
         setError(loginError.message)
-      }
-      else {
+      } else {
         // Success - reload page
         window.location.href = '/'
       }
-    }
-    catch {
+    } catch {
       setError('Login failed. Please try again.')
-    }
-    finally {
+    } finally {
       setLoading(false)
     }
   }
@@ -100,7 +97,7 @@ export function MailboxAuth() {
                 type="email"
                 placeholder="your@email.com"
                 value={email}
-                onChange={e => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 className="pl-10"
                 required
                 autoFocus
@@ -115,7 +112,7 @@ export function MailboxAuth() {
               type="password"
               placeholder="Enter your password"
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
               required
             />
           </div>

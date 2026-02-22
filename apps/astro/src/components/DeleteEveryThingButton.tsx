@@ -2,7 +2,16 @@ import { actions } from 'astro:actions'
 import { navigate } from 'astro:transitions/client'
 import { toast } from '@/hooks/use-toast'
 import { Button } from './ui/button'
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from './ui/drawer'
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from './ui/drawer'
 import { ToastAction } from './ui/toast'
 
 export default function DeleteEveryThingButton({ isDisabled }: { isDisabled: boolean }) {
@@ -30,31 +39,38 @@ export default function DeleteEveryThingButton({ isDisabled }: { isDisabled: boo
             </DrawerDescription>
           </DrawerHeader>
           <DrawerFooter>
-            <Button onClick={async () => {
-              const { error } = await actions.deleteAllEmailsByMessageTo()
+            <Button
+              onClick={async () => {
+                const { error } = await actions.deleteAllEmailsByMessageTo()
 
-              if (error) {
+                if (error) {
+                  return toast({
+                    variant: 'destructive',
+                    title: 'Uh oh! Something went wrong.',
+                    description: error.message,
+                  })
+                }
+
                 return toast({
-                  variant: 'destructive',
-                  title: 'Uh oh! Something went wrong.',
-                  description: error.message,
+                  title: 'Deleted',
+                  description: `All data deleted`,
+                  action: (
+                    <ToastAction
+                      altText="Reload page to update the data"
+                      onClick={() => navigate('/')}
+                    >
+                      Reload Page
+                    </ToastAction>
+                  ),
                 })
-              }
-
-              return toast({
-                title: 'Deleted',
-                description: `All data deleted`,
-                action: (
-                  <ToastAction altText="Reload page to update the data" onClick={() => navigate('/')}>Reload Page</ToastAction>
-                ),
-              })
-            }}
+              }}
             >
               Confirm
-
             </Button>
             <DrawerClose>
-              <Button variant="outline" className="w-full">Cancel</Button>
+              <Button variant="outline" className="w-full">
+                Cancel
+              </Button>
             </DrawerClose>
           </DrawerFooter>
         </div>

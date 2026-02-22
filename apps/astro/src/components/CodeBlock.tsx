@@ -24,7 +24,12 @@ export function CodeBlock({ code, language, className }: CodeBlockProps) {
   }, [code, language])
 
   return (
-    <pre className={cn('bg-[#1e1e1e] dark:bg-[#0d1117] border border-border rounded-lg p-4 overflow-x-auto', className)}>
+    <pre
+      className={cn(
+        'bg-[#1e1e1e] dark:bg-[#0d1117] border border-border rounded-lg p-4 overflow-x-auto',
+        className
+      )}
+    >
       <code ref={codeRef} className={`language-${language} text-sm font-mono`}>
         {code}
       </code>

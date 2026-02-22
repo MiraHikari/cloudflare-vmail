@@ -1,7 +1,8 @@
 {
   "name": "emails",
   "version": "1.0.0",
-  "description": "",
+  "description": "Email service monorepo with Astro frontend and Cloudflare Workers",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "dev": "pnpm dev:packages & pnpm dev:apps",
@@ -11,19 +12,38 @@
     "build:packages": "pnpm --filter './packages/*' run build",
     "build:apps": "pnpm --filter './apps/*' run build",
     "start": "pnpm --filter './apps/*' --parallel run start",
-    "lint": "pnpm -r run lint || true",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "type-check": "tsc --build",
     "type-check:watch": "tsc --build --watch",
     "clean": "pnpm -r run clean && rimraf dist .tsbuildinfo",
     "test": "pnpm -r run test",
-    "deploy": "pnpm build && pnpm -r run deploy"
+    "deploy": "pnpm build && pnpm -r run deploy",
+    "prepare": "pnpm build:packages && husky"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,astro}": [
+      "eslint --fix"
+    ],
+    "*.{js,jsx,ts,tsx,json,md,astro,yml,yaml}": [
+      "prettier --write"
+    ]
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@antfu/eslint-config": "^5.3.0",
+    "@commitlint/cli": "^19.6.1",
+    "@commitlint/config-conventional": "^19.6.0",
+    "@eslint-react/eslint-plugin": "^1.19.0",
     "eslint": "^9.35.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-react-refresh": "^0.4.16",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.3",
     "prettier": "^3.6.2",
     "prettier-plugin-astro": "^0.14.1",
     "rimraf": "^6.0.1",
@@ -31,8 +51,6 @@
   },
   "packageManager": "pnpm@10.17.1+sha512.17c560fca4867ae9473a3899ad84a88334914f379be46d455cbf92e5cf4b39d34985d452d2583baf19967fa76cb5c17bc9e245529d0b98745721aa7200ecaf7a",
   "pnpm": {
-    "overrides": {
-      "zod": "3.22.4"
-    }
+    "overrides": {}
   }
 }

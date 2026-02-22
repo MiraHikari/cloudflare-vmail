@@ -1,0 +1,220 @@
+---
+title: 'Development Guide'
+description: 'How to set up and run the project locally for development'
+lastUpdated: 2025-02-23
+---
+
+import { CodeBlock } from '@/components/CodeBlock'
+
+## Quick Start
+
+Get the project running locally in minutes with our streamlined development setup.
+
+### Prerequisites
+
+- **Node.js** 20+ (we recommend using [nvm](https://github.com/nvm-sh/nvm))
+- **pnpm** 10+ (package manager)
+- **Git**
+
+### Installation
+
+1. **Clone the repository**
+
+<CodeBlock code={`git clone https://github.com/yourusername/vmail.git
+cd vmail`} language="bash" client:load />
+
+2. **Install dependencies**
+
+<CodeBlock code={`pnpm install`} language="bash" client:load />
+
+3. **Start the development server**
+
+<CodeBlock code={`pnpm dev`} language="bash" client:load />
+
+The application will be available at `http://localhost:4321`.
+
+## Development Configuration
+
+### Environment Variables
+
+Create a `.env.development` file in `apps/astro/` for local development overrides:
+
+<CodeBlock code={`# Development Mode Flag
+DEV_MODE=true
+
+# Mock Data Configuration
+USE_MOCK_DATA=true
+MOCK_EMAIL_COUNT=5
+
+# Turnstile Configuration (disabled in dev)
+TURNSTILE_SECRET=dev-secret
+TURNSTILE_SITE_KEY=1x00000000000000000000AA
+
+# Site Configuration
+SITE_NAME="Vmail (Dev)"
+SITE_DESCRIPTION="Development environment for Vmail"
+JWT_SECRET=dev-jwt-secret-do-not-use-in-production
+COOKIE_EXPIRES_IN_SECONDS=86400
+
+# Mail Domain
+MAIL_DOMAIN="example.com,test.local"`} language="bash" client:load />
+
+### Development Features
+
+When running in development mode, the following features are automatically enabled:
+
+#### 🎭 Mock Data
+
+Generate fake emails for testing without connecting to a real database:
+
+- Set `USE_MOCK_DATA=true` to enable
+- Configure `MOCK_EMAIL_COUNT` to control the number of mock emails (default: 5)
+- Mock data includes realistic senders, subjects, and content
+
+#### 🔓 Turnstile Bypass
+
+Skip CAPTCHA verification during development:
+
+- Set `TURNSTILE_SECRET=dev-secret` to disable
+- The UI will show a "Turnstile disabled" notice
+- Form submissions will automatically include a bypass token
+
+#### 📱 Responsive Design
+
+Test on different screen sizes:
+
+- Mobile: 320px - 768px
+- Tablet: 768px - 1024px
+- Desktop: 1024px+
+
+## Project Structure
+
+<CodeBlock code={`apps/
+├── astro/                    # Main frontend application
+│   ├── src/
+│   │   ├── actions/         # Astro Actions (API endpoints)
+│   │   ├── components/      # React & Astro components
+│   │   ├── content/docs/    # Documentation pages (MDX)
+│   │   ├── layouts/         # Page layouts
+│   │   ├── lib/             # Utility functions
+│   │   ├── pages/           # Route pages
+│   │   └── styles/          # Global styles
+│   ├── .env.development     # Dev environment variables
+│   └── wrangler.toml        # Cloudflare configuration
+│
+├── emails-worker/           # Cloudflare Worker for email processing
+│   └── src/
+│       └── index.ts         # Worker entry point
+│
+packages/
+└── database/                # Database schema and DAO
+    ├── schema.ts            # Drizzle schema definitions
+    └── dao.ts               # Data access objects`} language="text" client:load />
+
+## Available Scripts
+
+| Command | Description |
+|---------|-------------|
+| `pnpm dev` | Start development server with hot reload |
+| `pnpm build` | Build for production |
+| `pnpm preview` | Preview production build locally |
+| `pnpm lint` | Run ESLint with auto-fix |
+| `pnpm lint:check` | Run ESLint without fixing |
+| `pnpm type-check` | Run TypeScript type checking |
+| `pnpm format` | Format code with Prettier |
+
+## Database Setup (Optional)
+
+For full functionality with real data, set up a Cloudflare D1 database:
+
+1. **Install Wrangler CLI**
+
+<CodeBlock code={`npm install -g wrangler`} language="bash" client:load />
+
+2. **Login to Cloudflare**
+
+<CodeBlock code={`wrangler login`} language="bash" client:load />
+
+3. **Create D1 Database**
+
+<CodeBlock code={`wrangler d1 create vmail-dev`} language="bash" client:load />
+
+4. **Update wrangler.toml**
+
+Add your database ID to `apps/astro/wrangler.toml`:
+
+<CodeBlock code={`[[d1_databases]]
+binding = "DB"
+database_name = "vmail-dev"
+database_id = "your-database-id-here"`} language="toml" client:load />
+
+5. **Run Migrations**
+
+<CodeBlock code={`cd packages/database
+pnpm db:push`} language="bash" client:load />
+
+## Mock Data API
+
+When `USE_MOCK_DATA` is enabled, the following mock utilities are available:
+
+### Generate Mock Emails
+
+```typescript
+import { generateMockEmails } from '@/lib/dev-mock'
+
+// Generate 5 mock emails
+const emails = generateMockEmails(5, 'test@example.com')
+```
+
+### Mock Email Structure
+
+Each mock email includes:
+
+- **id**: Random unique identifier
+- **from**: Sender with name and address
+- **subject**: Random subject line
+- **text**: Plain text content
+- **html**: HTML content
+- **date**: Recent timestamp
+- **isRead**: Boolean flag
+
+## Debugging Tips
+
+### Browser DevTools
+
+- **React DevTools**: Install the browser extension for component inspection
+- **Network Tab**: Monitor API calls and responses
+- **Storage Tab**: Inspect cookies and localStorage
+
+### Console Logging
+
+Enable verbose logging in development:
+
+```typescript
+// In browser console
+localStorage.setItem('debug', 'true')
+```
+
+### Common Issues
+
+| Issue | Solution |
+|-------|----------|
+| Port 4321 in use | Change port: `pnpm dev -- --port 3000` |
+| Database connection failed | Check `wrangler.toml` configuration |
+| Type errors | Run `pnpm type-check` to identify issues |
+| Build fails | Clear cache: `rm -rf .astro dist` |
+
+## Contributing
+
+1. Create a feature branch: `git checkout -b feature/my-feature`
+2. Make your changes
+3. Run tests: `pnpm lint && pnpm type-check`
+4. Commit with conventional commits
+5. Push and create a Pull Request
+
+## Resources
+
+- [Astro Documentation](https://docs.astro.build)
+- [React Documentation](https://react.dev)
+- [Tailwind CSS Documentation](https://tailwindcss.com)
+- [Cloudflare Workers Documentation](https://developers.cloudflare.com/workers/)

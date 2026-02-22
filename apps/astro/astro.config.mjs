@@ -30,7 +30,7 @@ export default defineConfig({
     icon({
       include: {
         ic: ['twotone-shield', 'twotone-info', 'twotone-timer'],
-        mdi: ['arrow-left'],
+        mdi: ['arrow-left', 'email'],
         logos: ['cloudflare-icon'],
       },
     }),

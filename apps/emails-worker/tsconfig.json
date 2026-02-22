@@ -1,24 +1,15 @@
 {
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "lib": ["ES2022"],
-    "noEmit": true,
-    "types": ["@cloudflare/workers-types/2023-07-01"],
-    "baseUrl": ".",
-    "paths": {
-      "database": ["../../packages/database"]
-    }
-  },
-  "references": [
-    { "path": "../../packages/database" }
-  ],
-  "include": [
-    "worker-configuration.d.ts",
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "test",
-    "node_modules",
-    ".wrangler"
-  ]
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions": {
+		"lib": ["ES2022"],
+		"noEmit": true,
+		"types": ["@cloudflare/workers-types/2023-07-01"],
+		"baseUrl": ".",
+		"paths": {
+			"database": ["../../packages/database"]
+		}
+	},
+	"references": [{ "path": "../../packages/database" }],
+	"include": ["worker-configuration.d.ts", "src/**/*.ts"],
+	"exclude": ["test", "node_modules", ".wrangler"]
 }

@@ -1,8 +1,5 @@
 {
-  "extends": [
-    "astro/tsconfigs/strict",
-    "../../tsconfig.base.json"
-  ],
+  "extends": ["astro/tsconfigs/strict", "../../tsconfig.base.json"],
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "react",
@@ -12,16 +9,7 @@
       "database": ["../../packages/database"]
     }
   },
-  "references": [
-    { "path": "../../packages/database" }
-  ],
-  "include": [
-    ".astro/types.d.ts",
-    "**/*"
-  ],
-  "exclude": [
-    "dist",
-    "node_modules",
-    ".astro/cache"
-  ]
+  "references": [{ "path": "../../packages/database" }],
+  "include": [".astro/types.d.ts", "**/*"],
+  "exclude": ["dist", "node_modules", ".astro/cache"]
 }

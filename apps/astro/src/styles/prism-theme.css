@@ -1,11 +1,13 @@
 /* Custom Prism.js Theme for API Documentation */
 
 /* Base styling */
-code[class*="language-"],
-pre[class*="language-"] {
+code[class*='language-'],
+pre[class*='language-'] {
   color: #d4d4d4;
   text-shadow: none;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+    monospace;
   direction: ltr;
   text-align: left;
   white-space: pre;
@@ -17,8 +19,8 @@ pre[class*="language-"] {
 }
 
 /* Dark mode adjustments */
-.dark code[class*="language-"],
-.dark pre[class*="language-"] {
+.dark code[class*='language-'],
+.dark pre[class*='language-'] {
   color: #e6edf3;
 }
 

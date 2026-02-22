@@ -16,7 +16,9 @@ export default function ExitButton() {
           title: 'Exited',
           description: `Please reload page to update the state.`,
           action: (
-            <ToastAction altText="Reload page to exit" onClick={() => navigate('/')}>Reload Page</ToastAction>
+            <ToastAction altText="Reload page to exit" onClick={() => navigate('/')}>
+              Reload Page
+            </ToastAction>
           ),
         })
       }}

@@ -36,15 +36,13 @@ const OTP_KEYWORDS = [
 /**
  * Extract OTP codes from text
  */
-export function extractOTP(text: string): string[] {
-  if (!text)
-    return []
+export function extractOTP(text: string | null | undefined): string[] {
+  if (!text || typeof text !== 'string') return []
 
   const lowerText = text.toLowerCase()
-  const hasOTPContext = OTP_KEYWORDS.some(keyword => lowerText.includes(keyword))
+  const hasOTPContext = OTP_KEYWORDS.some((keyword) => lowerText.includes(keyword))
 
-  if (!hasOTPContext)
-    return []
+  if (!hasOTPContext) return []
 
   const codes = new Set<string>()
 
@@ -68,11 +66,11 @@ export function extractOTP(text: string): string[] {
 /**
  * Highlight OTP codes in HTML content
  */
-export function highlightOTP(html: string): string {
+export function highlightOTP(html: string | null | undefined): string {
+  if (!html || typeof html !== 'string') return ''
   const otpCodes = extractOTP(html.replace(/<[^>]*>/g, ''))
 
-  if (otpCodes.length === 0)
-    return html
+  if (otpCodes.length === 0) return html
 
   let highlighted = html
 
@@ -81,7 +79,7 @@ export function highlightOTP(html: string): string {
     const regex = new RegExp(`\\b${code}\\b`, 'g')
     highlighted = highlighted.replace(
       regex,
-      `<mark class="otp-highlight" data-otp="${code}">${code}</mark>`,
+      `<mark class="otp-highlight" data-otp="${code}">${code}</mark>`
     )
   })
 
@@ -91,7 +89,13 @@ export function highlightOTP(html: string): string {
 /**
  * Highlight OTP codes in plain text
  */
-export function highlightOTPInText(text: string): { text: string, codes: string[] } {
+export function highlightOTPInText(text: string | null | undefined): {
+  text: string
+  codes: string[]
+} {
+  if (!text || typeof text !== 'string') {
+    return { text: '', codes: [] }
+  }
   const codes = extractOTP(text)
 
   if (codes.length === 0) {

@@ -13,8 +13,7 @@ export function MailboxStats() {
     refetchInterval: 30000,
   })
 
-  if (!stats)
-    return null
+  if (!stats) return null
 
   return (
     <div className="grid grid-cols-3 gap-3">

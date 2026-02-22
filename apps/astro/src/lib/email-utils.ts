@@ -2,12 +2,22 @@
  * HTML 净化工具 - 移除危险标签和属性
  */
 
-const DANGEROUS_TAGS = ['script', 'iframe', 'object', 'embed', 'link', 'style', 'form', 'input', 'button', 'textarea']
+const DANGEROUS_TAGS = [
+  'script',
+  'iframe',
+  'object',
+  'embed',
+  'link',
+  'style',
+  'form',
+  'input',
+  'button',
+  'textarea',
+]
 const DANGEROUS_PROTOCOLS = ['javascript:', 'data:', 'vbscript:', 'file:']
 
-export function sanitizeHtml(html: string): string {
-  if (!html)
-    return ''
+export function sanitizeHtml(html: string | null | undefined): string {
+  if (!html || typeof html !== 'string') return ''
 
   // 创建临时容器
   const temp = document.createElement('div')
@@ -16,7 +26,7 @@ export function sanitizeHtml(html: string): string {
   // 移除危险标签
   DANGEROUS_TAGS.forEach((tag) => {
     const elements = temp.querySelectorAll(tag)
-    elements.forEach(el => el.remove())
+    elements.forEach((el) => el.remove())
   })
 
   // 处理所有链接
@@ -25,16 +35,15 @@ export function sanitizeHtml(html: string): string {
     const href = link.getAttribute('href') || ''
 
     // 检查危险协议
-    const isDangerous = DANGEROUS_PROTOCOLS.some(protocol =>
-      href.toLowerCase().startsWith(protocol),
+    const isDangerous = DANGEROUS_PROTOCOLS.some((protocol) =>
+      href.toLowerCase().startsWith(protocol)
     )
 
     if (isDangerous) {
       link.removeAttribute('href')
       link.style.textDecoration = 'line-through'
       link.title = 'Dangerous link removed'
-    }
-    else {
+    } else {
       // 添加安全属性
       link.setAttribute('target', '_blank')
       link.setAttribute('rel', 'noopener noreferrer nofollow')
@@ -57,15 +66,14 @@ export function sanitizeHtml(html: string): string {
     const src = img.getAttribute('src') || ''
 
     // 检查危险协议
-    const isDangerous = DANGEROUS_PROTOCOLS.some(protocol =>
-      src.toLowerCase().startsWith(protocol),
+    const isDangerous = DANGEROUS_PROTOCOLS.some((protocol) =>
+      src.toLowerCase().startsWith(protocol)
     )
 
     if (isDangerous) {
       img.removeAttribute('src')
       img.alt = 'Dangerous image removed'
-    }
-    else {
+    } else {
       img.setAttribute('loading', 'lazy')
       img.setAttribute('decoding', 'async')
       // 可选：添加referrerpolicy
@@ -81,7 +89,7 @@ export function sanitizeHtml(html: string): string {
  */
 export function buildRawMime(email: {
   id?: string
-  from?: { name?: string, address: string }
+  from?: { name?: string; address: string }
   messageTo?: string
   subject?: string | null
   date?: string | null
@@ -92,18 +100,16 @@ export function buildRawMime(email: {
   const lines: string[] = []
 
   // 基本头部
-  if (email.messageId)
-    lines.push(`Message-ID: ${email.messageId}`)
-  if (email.date)
-    lines.push(`Date: ${email.date}`)
+  if (email.messageId) lines.push(`Message-ID: ${email.messageId}`)
+  if (email.date) lines.push(`Date: ${email.date}`)
   if (email.from) {
-    const fromName = email.from.name ? `${email.from.name} <${email.from.address}>` : email.from.address
+    const fromName = email.from.name
+      ? `${email.from.name} <${email.from.address}>`
+      : email.from.address
     lines.push(`From: ${fromName}`)
   }
-  if (email.messageTo)
-    lines.push(`To: ${email.messageTo}`)
-  if (email.subject)
-    lines.push(`Subject: ${email.subject}`)
+  if (email.messageTo) lines.push(`To: ${email.messageTo}`)
+  if (email.subject) lines.push(`Subject: ${email.subject}`)
 
   lines.push('MIME-Version: 1.0')
 
@@ -123,13 +129,11 @@ export function buildRawMime(email: {
     lines.push(email.html || '')
     lines.push('')
     lines.push(`--${boundary}--`)
-  }
-  else if (email.html) {
+  } else if (email.html) {
     lines.push('Content-Type: text/html; charset=utf-8')
     lines.push('')
     lines.push(email.html)
-  }
-  else {
+  } else {
     lines.push('Content-Type: text/plain; charset=utf-8')
     lines.push('')
     lines.push(email.text || '')
@@ -141,21 +145,36 @@ export function buildRawMime(email: {
 /**
  * 复制文本到剪贴板
  */
-export async function copyToClipboard(text: string): Promise<boolean> {
+export async function copyToClipboard(text: string | null | undefined): Promise<boolean> {
+  if (!text || typeof text !== 'string') return false
+
   try {
-    await navigator.clipboard.writeText(text)
-    return true
-  }
-  catch {
-    // 降级方案
+    // Try modern clipboard API first (requires secure context)
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text)
+      return true
+    }
+
+    // Fallback for older browsers or non-secure contexts
     const textarea = document.createElement('textarea')
     textarea.value = text
     textarea.style.position = 'fixed'
-    textarea.style.opacity = '0'
+    textarea.style.left = '-999999px'
+    textarea.style.top = '-999999px'
+    textarea.setAttribute('aria-hidden', 'true')
     document.body.appendChild(textarea)
-    textarea.select()
-    const success = document.execCommand('copy')
-    document.body.removeChild(textarea)
-    return success
+
+    try {
+      textarea.focus()
+      textarea.select()
+      const success = document.execCommand('copy')
+      document.body.removeChild(textarea)
+      return success
+    } catch {
+      document.body.removeChild(textarea)
+      return false
+    }
+  } catch {
+    return false
   }
 }

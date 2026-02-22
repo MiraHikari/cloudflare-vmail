@@ -47,15 +47,8 @@ interface HeaderItem {
 
 // Helper function to format addresses
 function formatAddress(addr: Address | undefined | null): string {
-  if (!addr)
-    return 'N/A'
+  if (!addr) return 'N/A'
   return addr.name ? `${addr.name} <${addr.address}>` : addr.address
-}
-
-function formatAddresses(addrs: Address[] | undefined | null): string {
-  if (!addrs || addrs.length === 0)
-    return 'N/A'
-  return addrs.map(addr => formatAddress(addr)).join(', ')
 }
 
 export function EmailHeaders({ email }: EmailHeadersProps) {
@@ -109,23 +102,17 @@ export function EmailHeaders({ email }: EmailHeadersProps) {
     },
     {
       label: 'Read At',
-      value: email.readAt
-        ? format(new Date(email.readAt), 'PPpp')
-        : 'Not read yet',
+      value: email.readAt ? format(new Date(email.readAt), 'PPpp') : 'Not read yet',
       copyable: false,
     },
     {
       label: 'Created At',
-      value: email.createdAt
-        ? format(new Date(email.createdAt), 'PPpp')
-        : 'N/A',
+      value: email.createdAt ? format(new Date(email.createdAt), 'PPpp') : 'N/A',
       copyable: false,
     },
     {
       label: 'Updated At',
-      value: email.updatedAt
-        ? format(new Date(email.updatedAt), 'PPpp')
-        : 'N/A',
+      value: email.updatedAt ? format(new Date(email.updatedAt), 'PPpp') : 'N/A',
       copyable: false,
     },
   ]
@@ -138,8 +125,18 @@ export function EmailHeaders({ email }: EmailHeadersProps) {
           {/* From Section */}
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              <svg
+                className="w-6 h-6 text-primary"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                />
               </svg>
             </div>
             <div className="flex-1 min-w-0">
@@ -157,13 +154,11 @@ export function EmailHeaders({ email }: EmailHeadersProps) {
                   onClick={() => handleCopy(formatAddress(email.from), 'From')}
                   title="Copy sender address"
                 >
-                  {copiedField === 'From'
-                    ? (
-                        <Check className="h-4 w-4 text-green-600" />
-                      )
-                    : (
-                        <Copy className="h-4 w-4" />
-                      )}
+                  {copiedField === 'From' ? (
+                    <Check className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
             </div>
@@ -174,8 +169,18 @@ export function EmailHeaders({ email }: EmailHeadersProps) {
           {/* To Section */}
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-              <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              <svg
+                className="w-6 h-6 text-blue-600 dark:text-blue-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                />
               </svg>
             </div>
             <div className="flex-1 min-w-0">
@@ -193,13 +198,11 @@ export function EmailHeaders({ email }: EmailHeadersProps) {
                   onClick={() => handleCopy(email.messageTo || 'Unknown', 'To')}
                   title="Copy recipient address"
                 >
-                  {copiedField === 'To'
-                    ? (
-                        <Check className="h-4 w-4 text-green-600" />
-                      )
-                    : (
-                        <Copy className="h-4 w-4" />
-                      )}
+                  {copiedField === 'To' ? (
+                    <Check className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
             </div>
@@ -210,8 +213,18 @@ export function EmailHeaders({ email }: EmailHeadersProps) {
           {/* Subject Section */}
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-              <svg className="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+              <svg
+                className="w-6 h-6 text-purple-600 dark:text-purple-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+                />
               </svg>
             </div>
             <div className="flex-1 min-w-0">
@@ -229,13 +242,11 @@ export function EmailHeaders({ email }: EmailHeadersProps) {
                   onClick={() => handleCopy(email.subject || '(No subject)', 'Subject')}
                   title="Copy subject"
                 >
-                  {copiedField === 'Subject'
-                    ? (
-                        <Check className="h-4 w-4 text-green-600" />
-                      )
-                    : (
-                        <Copy className="h-4 w-4" />
-                      )}
+                  {copiedField === 'Subject' ? (
+                    <Check className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
             </div>
@@ -246,8 +257,18 @@ export function EmailHeaders({ email }: EmailHeadersProps) {
           {/* Date Section */}
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0">
-              <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              <svg
+                className="w-6 h-6 text-green-600 dark:text-green-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
               </svg>
             </div>
             <div className="flex-1 min-w-0">
@@ -275,7 +296,7 @@ export function EmailHeaders({ email }: EmailHeadersProps) {
           onToggle={() => toggleSection('metadata')}
           icon={<Database className="h-4 w-4 text-muted-foreground" />}
         >
-          {metadataHeaders.map(header => (
+          {metadataHeaders.map((header) => (
             <HeaderRow
               key={header.label}
               label={header.label}
@@ -300,10 +321,7 @@ export function EmailHeaders({ email }: EmailHeadersProps) {
                 <div key={index} className="text-xs font-mono">
                   {Object.entries(header).map(([key, value]) => (
                     <div key={key} className="grid grid-cols-[150px_1fr] gap-2 py-1">
-                      <div className="text-muted-foreground font-semibold truncate">
-                        {key}
-                        :
-                      </div>
+                      <div className="text-muted-foreground font-semibold truncate">{key}:</div>
                       <div className="text-foreground break-all">{value}</div>
                     </div>
                   ))}
@@ -336,6 +354,7 @@ function CollapsibleSection({
   return (
     <div className="border-t border-border">
       <button
+        type="button"
         onClick={onToggle}
         className="w-full px-4 py-3 flex items-center justify-between hover:bg-muted/50 transition-colors"
       >
@@ -343,13 +362,11 @@ function CollapsibleSection({
           {icon}
           <span className="text-sm font-medium text-foreground">{title}</span>
         </div>
-        {expanded
-          ? (
-              <ChevronUp className="h-4 w-4 text-muted-foreground" />
-            )
-          : (
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-            )}
+        {expanded ? (
+          <ChevronUp className="h-4 w-4 text-muted-foreground" />
+        ) : (
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        )}
       </button>
 
       {expanded && (
@@ -376,9 +393,7 @@ function HeaderRow({ label, value, copyable, copied, onCopy }: HeaderRowProps) {
         {label}
       </div>
       <div className="flex items-start gap-2 min-w-0">
-        <div className="text-sm text-foreground break-all flex-1 font-mono">
-          {value}
-        </div>
+        <div className="text-sm text-foreground break-all flex-1 font-mono">{value}</div>
         {copyable && (
           <Button
             variant="ghost"
@@ -387,13 +402,7 @@ function HeaderRow({ label, value, copyable, copied, onCopy }: HeaderRowProps) {
             onClick={onCopy}
             title={`Copy ${label}`}
           >
-            {copied
-              ? (
-                  <Check className="h-3 w-3 text-green-600" />
-                )
-              : (
-                  <Copy className="h-3 w-3" />
-                )}
+            {copied ? <Check className="h-3 w-3 text-green-600" /> : <Copy className="h-3 w-3" />}
           </Button>
         )}
       </div>

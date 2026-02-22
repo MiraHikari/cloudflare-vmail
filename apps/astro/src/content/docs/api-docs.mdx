@@ -17,7 +17,8 @@ and integration workflows.
     <div class="flex items-start gap-3">
       <div class="text-blue-600 dark:text-blue-400 mt-0.5">ℹ️</div>
       <div class="text-sm text-blue-800 dark:text-blue-300">
-        <strong>Base URL:</strong> <code class="bg-blue-100 dark:bg-blue-900/50 px-2 py-0.5 rounded">/api/v1</code>
+        <strong>Base URL:</strong>{' '}
+        <code class="bg-blue-100 dark:bg-blue-900/50 px-2 py-0.5 rounded">/api/v1</code>
       </div>
     </div>
   </div>
@@ -56,7 +57,10 @@ Include your token in the `Authorization` header as a Bearer token:
       <div class="text-sm text-amber-800 dark:text-amber-300">
         <strong>Important:</strong>
         <ul class="mt-2 space-y-1 list-disc list-inside">
-          <li>Tokens are tied to specific mailboxes - you can only access the mailbox that was created with that token</li>
+          <li>
+            Tokens are tied to specific mailboxes - you can only access the mailbox that was created
+            with that token
+          </li>
           <li>Tokens expire after 7 days</li>
           <li>Store tokens securely and never commit them to version control</li>
           <li>Each mailbox creation generates a new token</li>
@@ -75,26 +79,37 @@ Generate a new temporary email address and receive an access token for it.
 <div class="not-prose my-4">
   <div class="bg-card border border-border rounded-lg overflow-hidden">
     <div class="bg-muted/50 px-4 py-2 border-b border-border">
-      <span class="inline-block bg-green-600 text-white text-xs font-bold px-2 py-1 rounded">POST</span>
+      <span class="inline-block bg-green-600 text-white text-xs font-bold px-2 py-1 rounded">
+        POST
+      </span>
       <code class="ml-2 font-mono text-sm">/api/v1/mailbox</code>
     </div>
     <div class="p-4 space-y-4">
       <div>
         <h4 class="text-sm font-semibold mb-2">Request Body (Optional)</h4>
-        <CodeBlock code={JSON.stringify({ domain: 'example.com' }, null, 2)} language="json" className="text-xs" client:load />
+        <CodeBlock
+          code={JSON.stringify({ domain: 'example.com' }, null, 2)}
+          language="json"
+          className="text-xs"
+          client:load
+        />
       </div>
       <div>
         <h4 class="text-sm font-semibold mb-2">Response (201 Created)</h4>
         <CodeBlock
-          code={JSON.stringify({
-  success: true,
-  mailbox: {
-    address: 'random123@example.com',
-    token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-    expiresIn: '7 days',
-    createdAt: '2025-10-03T12:00:00.000Z',
-  },
-}, null, 2)}
+          code={JSON.stringify(
+            {
+              success: true,
+              mailbox: {
+                address: 'random123@example.com',
+                token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+                expiresIn: '7 days',
+                createdAt: '2025-10-03T12:00:00.000Z',
+              },
+            },
+            null,
+            2
+          )}
           language="json"
           className="text-xs"
           client:load
@@ -111,46 +126,64 @@ Retrieve all emails for a specific mailbox with optional pagination and filterin
 <div class="not-prose my-4">
   <div class="bg-card border border-border rounded-lg overflow-hidden">
     <div class="bg-muted/50 px-4 py-2 border-b border-border">
-      <span class="inline-block bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded">GET</span>
+      <span class="inline-block bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded">
+        GET
+      </span>
       <code class="ml-2 font-mono text-sm">/api/v1/mailbox/:address/emails</code>
     </div>
     <div class="p-4 space-y-4">
       <div>
         <h4 class="text-sm font-semibold mb-2">Headers</h4>
-        <CodeBlock code="Authorization: Bearer YOUR_TOKEN_HERE" language="bash" className="text-xs" client:load />
+        <CodeBlock
+          code="Authorization: Bearer YOUR_TOKEN_HERE"
+          language="bash"
+          className="text-xs"
+          client:load
+        />
       </div>
       <div>
         <h4 class="text-sm font-semibold mb-2">Query Parameters</h4>
         <ul class="text-sm space-y-1">
-          <li><code>limit</code> (number, optional) - Number of emails to return (default: 50, max: 100)</li>
-          <li><code>offset</code> (number, optional) - Offset for pagination (default: 0)</li>
-          <li><code>unread_only</code> (boolean, optional) - Only return unread emails</li>
+          <li>
+            <code>limit</code> (number, optional) - Number of emails to return (default: 50, max:
+            100)
+          </li>
+          <li>
+            <code>offset</code> (number, optional) - Offset for pagination (default: 0)
+          </li>
+          <li>
+            <code>unread_only</code> (boolean, optional) - Only return unread emails
+          </li>
         </ul>
       </div>
       <div>
         <h4 class="text-sm font-semibold mb-2">Response (200 OK)</h4>
         <CodeBlock
-          code={JSON.stringify({
-  success: true,
-  emails: [
-    {
-      id: 'abc123',
-      from: { address: 'sender@example.com', name: 'Sender Name' },
-      to: [{ address: 'random123@example.com', name: '' }],
-      subject: 'Welcome!',
-      date: '2025-10-03T12:00:00.000Z',
-      createdAt: '2025-10-03T12:00:00.000Z',
-      isRead: false,
-      readAt: null,
-      priority: 'normal',
-      textPreview: 'This is a preview of the email content...',
-      hasHtml: true,
-    },
-  ],
-  total: 1,
-  limit: 50,
-  offset: 0,
-}, null, 2)}
+          code={JSON.stringify(
+            {
+              success: true,
+              emails: [
+                {
+                  id: 'abc123',
+                  from: { address: 'sender@example.com', name: 'Sender Name' },
+                  to: [{ address: 'random123@example.com', name: '' }],
+                  subject: 'Welcome!',
+                  date: '2025-10-03T12:00:00.000Z',
+                  createdAt: '2025-10-03T12:00:00.000Z',
+                  isRead: false,
+                  readAt: null,
+                  priority: 'normal',
+                  textPreview: 'This is a preview of the email content...',
+                  hasHtml: true,
+                },
+              ],
+              total: 1,
+              limit: 50,
+              offset: 0,
+            },
+            null,
+            2
+          )}
           language="json"
           className="text-xs"
           client:load
@@ -167,33 +200,44 @@ Retrieve complete details of a specific email including full content and headers
 <div class="not-prose my-4">
   <div class="bg-card border border-border rounded-lg overflow-hidden">
     <div class="bg-muted/50 px-4 py-2 border-b border-border">
-      <span class="inline-block bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded">GET</span>
+      <span class="inline-block bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded">
+        GET
+      </span>
       <code class="ml-2 font-mono text-sm">/api/v1/mailbox/:address/emails/:id</code>
     </div>
     <div class="p-4 space-y-4">
       <div>
         <h4 class="text-sm font-semibold mb-2">Headers</h4>
-        <CodeBlock code="Authorization: Bearer YOUR_TOKEN_HERE" language="bash" className="text-xs" client:load />
+        <CodeBlock
+          code="Authorization: Bearer YOUR_TOKEN_HERE"
+          language="bash"
+          className="text-xs"
+          client:load
+        />
       </div>
       <div>
         <h4 class="text-sm font-semibold mb-2">Response (200 OK)</h4>
         <CodeBlock
-          code={JSON.stringify({
-  success: true,
-  email: {
-    id: 'abc123',
-    from: { address: 'sender@example.com', name: 'Sender Name' },
-    to: [{ address: 'random123@example.com', name: '' }],
-    subject: 'Welcome!',
-    messageId: '<abc123@mail.example.com>',
-    date: '2025-10-03T12:00:00.000Z',
-    text: 'Plain text content...',
-    html: '<html>HTML content...</html>',
-    headers: [{ 'Content-Type': 'text/html; charset=utf-8' }],
-    isRead: false,
-    priority: 'normal',
-  },
-}, null, 2)}
+          code={JSON.stringify(
+            {
+              success: true,
+              email: {
+                id: 'abc123',
+                from: { address: 'sender@example.com', name: 'Sender Name' },
+                to: [{ address: 'random123@example.com', name: '' }],
+                subject: 'Welcome!',
+                messageId: '<abc123@mail.example.com>',
+                date: '2025-10-03T12:00:00.000Z',
+                text: 'Plain text content...',
+                html: '<html>HTML content...</html>',
+                headers: [{ 'Content-Type': 'text/html; charset=utf-8' }],
+                isRead: false,
+                priority: 'normal',
+              },
+            },
+            null,
+            2
+          )}
           language="json"
           className="text-xs"
           client:load
@@ -210,17 +254,29 @@ Delete a specific email from the mailbox.
 <div class="not-prose my-4">
   <div class="bg-card border border-border rounded-lg overflow-hidden">
     <div class="bg-muted/50 px-4 py-2 border-b border-border">
-      <span class="inline-block bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">DELETE</span>
+      <span class="inline-block bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">
+        DELETE
+      </span>
       <code class="ml-2 font-mono text-sm">/api/v1/mailbox/:address/emails/:id</code>
     </div>
     <div class="p-4 space-y-4">
       <div>
         <h4 class="text-sm font-semibold mb-2">Headers</h4>
-        <CodeBlock code="Authorization: Bearer YOUR_TOKEN_HERE" language="bash" className="text-xs" client:load />
+        <CodeBlock
+          code="Authorization: Bearer YOUR_TOKEN_HERE"
+          language="bash"
+          className="text-xs"
+          client:load
+        />
       </div>
       <div>
         <h4 class="text-sm font-semibold mb-2">Response (200 OK)</h4>
-        <CodeBlock code={JSON.stringify({ success: true }, null, 2)} language="json" className="text-xs" client:load />
+        <CodeBlock
+          code={JSON.stringify({ success: true }, null, 2)}
+          language="json"
+          className="text-xs"
+          client:load
+        />
       </div>
     </div>
   </div>
@@ -280,65 +336,65 @@ The API uses standard HTTP status codes to indicate the success or failure of re
 
 // Step 1: Create a temporary mailbox and get access token
 async function createMailbox() {
-  const response = await fetch(\`\${BASE_URL}/mailbox\`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
+const response = await fetch(\`\${BASE_URL}/mailbox\`, {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+}
+});
 
-  const data = await response.json();
-  console.log('Mailbox created:', data.mailbox.address);
-  console.log('Token:', data.mailbox.token);
-  return data.mailbox;
+const data = await response.json();
+console.log('Mailbox created:', data.mailbox.address);
+console.log('Token:', data.mailbox.token);
+return data.mailbox;
 }
 
 // Step 2: Get emails for the mailbox using the token
 async function getEmails(mailboxAddress, token) {
-  const response = await fetch(
-    \`\${BASE_URL}/mailbox/\${mailboxAddress}/emails?limit=10\`,
-    {
-      headers: {
-        'Authorization': \`Bearer \${token}\`
-      }
-    }
-  );
+const response = await fetch(
+\`\${BASE_URL}/mailbox/\${mailboxAddress}/emails?limit=10\`,
+{
+headers: {
+'Authorization': \`Bearer \${token}\`
+}
+}
+);
 
-  const data = await response.json();
-  console.log(\`Found \${data.total} emails\`);
-  return data.emails;
+const data = await response.json();
+console.log(\`Found \${data.total} emails\`);
+return data.emails;
 }
 
 // Step 3: Get a specific email
 async function getEmail(mailboxAddress, emailId, token) {
-  const response = await fetch(
-    \`\${BASE_URL}/mailbox/\${mailboxAddress}/emails/\${emailId}\`,
-    {
-      headers: {
-        'Authorization': \`Bearer \${token}\`
-      }
-    }
-  );
+const response = await fetch(
+\`\${BASE_URL}/mailbox/\${mailboxAddress}/emails/\${emailId}\`,
+{
+headers: {
+'Authorization': \`Bearer \${token}\`
+}
+}
+);
 
-  const data = await response.json();
-  return data.email;
+const data = await response.json();
+return data.email;
 }
 
 // Usage
 (async () => {
-  const mailbox = await createMailbox();
+const mailbox = await createMailbox();
 
-  // Wait for emails...
-  await new Promise(resolve => setTimeout(resolve, 5000));
+// Wait for emails...
+await new Promise(resolve => setTimeout(resolve, 5000));
 
-  const emails = await getEmails(mailbox.address, mailbox.token);
-  if (emails.length > 0) {
-    const fullEmail = await getEmail(mailbox.address, emails[0].id, mailbox.token);
-    console.log('Email content:', fullEmail.text);
-  }
+const emails = await getEmails(mailbox.address, mailbox.token);
+if (emails.length > 0) {
+const fullEmail = await getEmail(mailbox.address, emails[0].id, mailbox.token);
+console.log('Email content:', fullEmail.text);
+}
 })();`}
-  language="javascript"
-  client:load
+language="javascript"
+client:load
 />
 
 ### Python Example
@@ -350,45 +406,49 @@ import time
 BASE_URL = '/api/v1'
 
 # Step 1: Create a temporary mailbox and get access token
+
 def create_mailbox():
-    response = requests.post(
-        f'{BASE_URL}/mailbox',
-        headers={'Content-Type': 'application/json'}
-    )
-    data = response.json()
-    print(f"Mailbox created: {data['mailbox']['address']}")
-    print(f"Token: {data['mailbox']['token']}")
-    return data['mailbox']
+response = requests.post(
+f'{BASE_URL}/mailbox',
+headers={'Content-Type': 'application/json'}
+)
+data = response.json()
+print(f"Mailbox created: {data['mailbox']['address']}")
+print(f"Token: {data['mailbox']['token']}")
+return data['mailbox']
 
 # Step 2: Get emails for the mailbox using the token
+
 def get_emails(mailbox_address, token):
-    response = requests.get(
-        f'{BASE_URL}/mailbox/{mailbox_address}/emails',
-        headers={'Authorization': f'Bearer {token}'},
-        params={'limit': 10}
-    )
-    data = response.json()
-    print(f"Found {data['total']} emails")
-    return data['emails']
+response = requests.get(
+f'{BASE_URL}/mailbox/{mailbox_address}/emails',
+headers={'Authorization': f'Bearer {token}'},
+params={'limit': 10}
+)
+data = response.json()
+print(f"Found {data['total']} emails")
+return data['emails']
 
 # Step 3: Get a specific email
+
 def get_email(mailbox_address, email_id, token):
-    response = requests.get(
-        f'{BASE_URL}/mailbox/{mailbox_address}/emails/{email_id}',
-        headers={'Authorization': f'Bearer {token}'}
-    )
-    return response.json()['email']
+response = requests.get(
+f'{BASE_URL}/mailbox/{mailbox_address}/emails/{email_id}',
+headers={'Authorization': f'Bearer {token}'}
+)
+return response.json()['email']
 
 # Usage
+
 mailbox = create_mailbox()
-time.sleep(5)  # Wait for emails
+time.sleep(5) # Wait for emails
 
 emails = get_emails(mailbox['address'], mailbox['token'])
 if emails:
-    full_email = get_email(mailbox['address'], emails[0]['id'], mailbox['token'])
-    print(f"Email content: {full_email['text']}")`}
-  language="python"
-  client:load
+full_email = get_email(mailbox['address'], emails[0]['id'], mailbox['token'])
+print(f"Email content: {full_email['text']}")`}
+language="python"
+client:load
 />
 
 ### cURL Examples
@@ -399,28 +459,39 @@ curl -X POST /api/v1/mailbox \\
   -H "Content-Type: application/json"
 
 # Response will include:
+
 # {
-#   "success": true,
-#   "mailbox": {
-#     "address": "random123@example.com",
-#     "token": "eyJhbGc...",
-#     "expiresIn": "7 days"
-#   }
+
+# "success": true,
+
+# "mailbox": {
+
+# "address": "random123@example.com",
+
+# "token": "eyJhbGc...",
+
+# "expiresIn": "7 days"
+
+# }
+
 # }
 
 # Step 2: List emails (use the token from above)
+
 curl -X GET /api/v1/mailbox/random123@example.com/emails \\
-  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+-H "Authorization: Bearer YOUR_TOKEN_HERE"
 
 # Step 3: Get specific email
+
 curl -X GET /api/v1/mailbox/random123@example.com/emails/abc123 \\
-  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+-H "Authorization: Bearer YOUR_TOKEN_HERE"
 
 # Step 4: Delete email
+
 curl -X DELETE /api/v1/mailbox/random123@example.com/emails/abc123 \\
-  -H "Authorization: Bearer YOUR_TOKEN_HERE"`}
-  language="bash"
-  client:load
+-H "Authorization: Bearer YOUR_TOKEN_HERE"`}
+language="bash"
+client:load
 />
 
 ## Typical Workflow

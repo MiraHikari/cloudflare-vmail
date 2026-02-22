@@ -15,7 +15,6 @@ const { hasMails } = Astro.props
 
 const savedMailbox = Astro.cookies.get('mailbox')?.json() as MailboxSession
 
-
 const verified = await jose
   .jwtVerify(savedMailbox.token, encodeJWTSecret(String(Astro.locals.runtime.env.JWT_SECRET)))
   .then(() => true)

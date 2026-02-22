@@ -4,7 +4,16 @@ import { navigate } from 'astro:transitions/client'
 import { useState } from 'react'
 import { useToast } from '@/hooks/use-toast'
 import { Button } from './ui/button'
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from './ui/drawer'
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from './ui/drawer'
 import { Input } from './ui/input'
 import { ToastAction } from './ui/toast'
 
@@ -15,7 +24,9 @@ export default function PasswordDrawer() {
   return (
     <Drawer>
       <DrawerTrigger className="mt-4 text-sm text-cyan-600 cursor-pointer">
-        <span><Icon icon="ph:password-bold" className="h-6 w-6 text-cyan-600 mx-3 inline-block"></Icon></span>
+        <span>
+          <Icon icon="ph:password-bold" className="h-6 w-6 text-cyan-600 mx-3 inline-block"></Icon>
+        </span>
         Retrieve mailbox using Email ID
       </DrawerTrigger>
       <DrawerContent>
@@ -23,42 +34,57 @@ export default function PasswordDrawer() {
           <DrawerHeader>
             <DrawerTitle>Retrieve Mailbox by ID</DrawerTitle>
             <DrawerDescription>
-              Enter your Email ID to retrieve your previously generated mailbox.
-              {' '}
-              <span className="text-destructive">Without this ID, you cannot access your generated email account again!</span>
+              Enter your Email ID to retrieve your previously generated mailbox.{' '}
+              <span className="text-destructive">
+                Without this ID, you cannot access your generated email account again!
+              </span>
             </DrawerDescription>
           </DrawerHeader>
           <div className="p-4 pb-0">
-            <Input required type="text" className="py-2.5 border-border rounded-md w-full hover:opacity-90 disabled:cursor-not-allowed disabled:bg-zinc-500max-w-[300px]" value={id} onChange={e => setId(e.target.value)} placeholder="Email ID" />
+            <Input
+              required
+              type="text"
+              className="py-2.5 border-border rounded-md w-full hover:opacity-90 disabled:cursor-not-allowed disabled:bg-zinc-500max-w-[300px]"
+              value={id}
+              onChange={(e) => setId(e.target.value)}
+              placeholder="Email ID"
+            />
           </div>
           <DrawerFooter>
-            <Button onClick={async () => {
-              const { error, data } = await actions.getMailboxOfEmail({
-                id,
-              })
-
-              if (error) {
-                return toast({
-                  variant: 'destructive',
-                  title: 'Uh oh! Something went wrong.',
-                  description: error.message,
+            <Button
+              onClick={async () => {
+                const { error, data } = await actions.getMailboxOfEmail({
+                  id,
                 })
-              }
 
-              return toast({
-                title: 'Mailbox Retrieved',
-                description: `Your email account has been recovered: ${data}`,
-                action: (
-                  <ToastAction altText="Reload page to receive emails" onClick={() => navigate('/')}>Reload Page</ToastAction>
-                ),
-              })
-            }}
+                if (error) {
+                  return toast({
+                    variant: 'destructive',
+                    title: 'Uh oh! Something went wrong.',
+                    description: error.message,
+                  })
+                }
+
+                return toast({
+                  title: 'Mailbox Retrieved',
+                  description: `Your email account has been recovered: ${data}`,
+                  action: (
+                    <ToastAction
+                      altText="Reload page to receive emails"
+                      onClick={() => navigate('/')}
+                    >
+                      Reload Page
+                    </ToastAction>
+                  ),
+                })
+              }}
             >
               Retrieve
-
             </Button>
             <DrawerClose>
-              <Button variant="outline" className="w-full">Cancel</Button>
+              <Button variant="outline" className="w-full">
+                Cancel
+              </Button>
             </DrawerClose>
           </DrawerFooter>
         </div>

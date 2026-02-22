@@ -11,7 +11,8 @@
     "deploy": "astro build && wrangler pages deploy",
     "cf-typegen": "wrangler types",
     "clean": "rimraf dist .astro",
-    "lint": "eslint . --fix"
+    "lint": "eslint . --fix",
+    "lint:check": "eslint ."
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",

@@ -44,7 +44,6 @@
   --color-chart-5: hsl(var(--chart-5));
 }
 
-
 @layer base {
   *,
   ::after,
@@ -190,7 +189,6 @@
   }
 }
 
-
 /* Custom scrollbar styles */
 .scrollbar-thin {
   scrollbar-width: thin;
@@ -245,10 +243,18 @@
     margin-bottom: 0.75em;
   }
 
-  .prose h1 { font-size: 2rem; }
-  .prose h2 { font-size: 1.5rem; }
-  .prose h3 { font-size: 1.25rem; }
-  .prose h4 { font-size: 1.125rem; }
+  .prose h1 {
+    font-size: 2rem;
+  }
+  .prose h2 {
+    font-size: 1.5rem;
+  }
+  .prose h3 {
+    font-size: 1.25rem;
+  }
+  .prose h4 {
+    font-size: 1.125rem;
+  }
 
   .prose p {
     margin: 1em 0;
@@ -260,10 +266,17 @@
     text-decoration: underline;
     text-underline-offset: 2px;
   }
-  .prose a:hover { opacity: 0.85; }
+  .prose a:hover {
+    opacity: 0.85;
+  }
 
-  .prose strong { color: var(--color-foreground); font-weight: 700; }
-  .prose em { font-style: italic; }
+  .prose strong {
+    color: var(--color-foreground);
+    font-weight: 700;
+  }
+  .prose em {
+    font-style: italic;
+  }
 
   .prose code {
     background-color: hsl(var(--muted));
@@ -306,7 +319,9 @@
     margin: 0.75em 0;
     padding-left: 1rem;
   }
-  .prose li { margin: 0.35em 0; }
+  .prose li {
+    margin: 0.35em 0;
+  }
 
   .prose hr {
     border: 0;

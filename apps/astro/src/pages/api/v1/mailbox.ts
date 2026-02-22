@@ -24,27 +24,22 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Parse request body
     let domain: string | undefined
     try {
-      const body = await request.json() as { domain?: string }
+      const body = (await request.json()) as { domain?: string }
       domain = body.domain
-    }
-    catch {
+    } catch {
       // If no body or invalid JSON, use default domain
     }
 
     // Get available domains from environment
     const availableDomains = String(locals.runtime.env.AVAILABLE_DOMAINS).split(',')
-    const selectedDomain = (domain && availableDomains.includes(domain)
-      ? domain
-      : availableDomains[0]) || 'example.com'
+    const selectedDomain =
+      (domain && availableDomains.includes(domain) ? domain : availableDomains[0]) || 'example.com'
 
     // Generate new mailbox
     const mailboxAddress = generateNewMailAddr(selectedDomain)
 
     // Generate access token
-    const accessToken = await genMailboxAccessToken(
-      mailboxAddress,
-      locals.runtime.env.JWT_SECRET,
-    )
+    const accessToken = await genMailboxAccessToken(mailboxAddress, locals.runtime.env.JWT_SECRET)
 
     return new Response(
       JSON.stringify({
@@ -56,14 +51,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
           createdAt: new Date().toISOString(),
         },
       }),
-      { status: 201, headers: { 'Content-Type': 'application/json' } },
+      { status: 201, headers: { 'Content-Type': 'application/json' } }
     )
-  }
-  catch (error) {
+  } catch (error) {
     console.error('API Error:', error)
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } },
-    )
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    })
   }
 }

@@ -8,7 +8,7 @@ import { Button } from './ui/button'
 interface EmailViewerProps {
   email: {
     id?: string
-    from?: { name?: string, address: string }
+    from?: { name?: string; address: string }
     messageTo?: string
     subject?: string | null
     date?: string | null
@@ -31,8 +31,7 @@ export function EmailViewer({ email }: EmailViewerProps) {
   const { toast } = useToast()
 
   const safeHtml = useMemo(() => {
-    if (!email.html)
-      return ''
+    if (!email.html) return ''
     return sanitizeHtml(email.html)
   }, [email.html])
 
@@ -122,8 +121,7 @@ export function EmailViewer({ email }: EmailViewerProps) {
         title: 'Copied to clipboard',
         description: `${mode.toUpperCase()} content copied successfully`,
       })
-    }
-    else {
+    } else {
       toast({
         title: 'Copy failed',
         description: 'Could not copy to clipboard',
@@ -133,7 +131,12 @@ export function EmailViewer({ email }: EmailViewerProps) {
   }
 
   return (
-    <div className={cn('space-y-4', isFullscreen && 'fixed inset-0 z-50 bg-background p-6 overflow-auto')}>
+    <div
+      className={cn(
+        'space-y-4',
+        isFullscreen && 'fixed inset-0 z-50 bg-background p-6 overflow-auto'
+      )}
+    >
       {/* Header Bar */}
       <div className="flex items-center justify-between gap-3 flex-wrap bg-muted/30 rounded-lg p-3 border border-border">
         {/* Mode Switcher */}
@@ -171,25 +174,18 @@ export function EmailViewer({ email }: EmailViewerProps) {
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleCopy}
-            className="transition-all"
-          >
-            {copied
-              ? (
-                  <>
-                    <Check className="h-4 w-4 mr-2 text-green-600" />
-                    Copied
-                  </>
-                )
-              : (
-                  <>
-                    <Copy className="h-4 w-4 mr-2" />
-                    Copy
-                  </>
-                )}
+          <Button variant="outline" size="sm" onClick={handleCopy} className="transition-all">
+            {copied ? (
+              <>
+                <Check className="h-4 w-4 mr-2 text-green-600" />
+                Copied
+              </>
+            ) : (
+              <>
+                <Copy className="h-4 w-4 mr-2" />
+                Copy
+              </>
+            )}
           </Button>
 
           {mode === 'html' && (
@@ -216,7 +212,8 @@ export function EmailViewer({ email }: EmailViewerProps) {
                 Secure HTML Rendering
               </p>
               <p className="text-blue-700 dark:text-blue-300 text-xs">
-                Email is displayed in a sandboxed iframe. All scripts, forms, and potentially dangerous content have been sanitized. External links open in new tabs.
+                Email is displayed in a sandboxed iframe. All scripts, forms, and potentially
+                dangerous content have been sanitized. External links open in new tabs.
               </p>
             </div>
           </div>
@@ -232,7 +229,8 @@ export function EmailViewer({ email }: EmailViewerProps) {
                 Plain Text View
               </p>
               <p className="text-green-700 dark:text-green-300 text-xs">
-                Viewing the plain text version - most reliable for extracting codes and reading content without formatting.
+                Viewing the plain text version - most reliable for extracting codes and reading
+                content without formatting.
               </p>
             </div>
           </div>
@@ -248,7 +246,8 @@ export function EmailViewer({ email }: EmailViewerProps) {
                 Raw MIME Source
               </p>
               <p className="text-purple-700 dark:text-purple-300 text-xs">
-                Viewing the reconstructed MIME source - useful for debugging email delivery issues and exporting.
+                Viewing the reconstructed MIME source - useful for debugging email delivery issues
+                and exporting.
               </p>
             </div>
           </div>
@@ -259,48 +258,44 @@ export function EmailViewer({ email }: EmailViewerProps) {
       <div
         className={cn(
           'rounded-lg border-2 border-border overflow-hidden transition-all shadow-sm',
-          'bg-card',
+          'bg-card'
         )}
       >
-        {mode === 'html' && email.html
-          ? (
-              <iframe
-                ref={iframeRef}
-                title="Email HTML Content"
-                sandbox="allow-same-origin allow-popups"
-                className="w-full min-h-[500px] bg-white dark:bg-gray-900"
-                style={{ height: isFullscreen ? 'calc(100vh - 300px)' : '600px' }}
-              />
-            )
-          : mode === 'html' && !email.html
-            ? (
-                <div className="p-12 text-center">
-                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
-                    <Shield className="h-8 w-8 text-muted-foreground" />
-                  </div>
-                  <p className="text-muted-foreground font-medium">No HTML content available</p>
-                  <p className="text-sm text-muted-foreground mt-2">Try viewing the plain text version instead</p>
-                </div>
-              )
-            : null}
+        {mode === 'html' && email.html ? (
+          <iframe
+            ref={iframeRef}
+            title="Email HTML Content"
+            sandbox="allow-same-origin allow-popups"
+            className="w-full min-h-[500px] bg-white dark:bg-gray-900"
+            style={{ height: isFullscreen ? 'calc(100vh - 300px)' : '600px' }}
+          />
+        ) : mode === 'html' && !email.html ? (
+          <div className="p-12 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
+              <Shield className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <p className="text-muted-foreground font-medium">No HTML content available</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Try viewing the plain text version instead
+            </p>
+          </div>
+        ) : null}
 
-        {mode === 'text' && email.text
-          ? (
-              <pre className="whitespace-pre-wrap text-sm p-6 font-mono leading-relaxed text-foreground overflow-auto max-h-[600px]">
-                {email.text}
-              </pre>
-            )
-          : mode === 'text' && !email.text
-            ? (
-                <div className="p-12 text-center">
-                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
-                    <FileText className="h-8 w-8 text-muted-foreground" />
-                  </div>
-                  <p className="text-muted-foreground font-medium">No plain text content available</p>
-                  <p className="text-sm text-muted-foreground mt-2">Try viewing the HTML version instead</p>
-                </div>
-              )
-            : null}
+        {mode === 'text' && email.text ? (
+          <pre className="whitespace-pre-wrap text-sm p-6 font-mono leading-relaxed text-foreground overflow-auto max-h-[600px]">
+            {email.text}
+          </pre>
+        ) : mode === 'text' && !email.text ? (
+          <div className="p-12 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
+              <FileText className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <p className="text-muted-foreground font-medium">No plain text content available</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Try viewing the HTML version instead
+            </p>
+          </div>
+        ) : null}
 
         {mode === 'raw' && (
           <div className="relative">
@@ -320,9 +315,7 @@ export function EmailViewer({ email }: EmailViewerProps) {
           {mode === 'text' && email.text && (
             <span>Text: {(email.text.length / 1024).toFixed(2)} KB</span>
           )}
-          {mode === 'raw' && (
-            <span>Raw: {(rawSource.length / 1024).toFixed(2)} KB</span>
-          )}
+          {mode === 'raw' && <span>Raw: {(rawSource.length / 1024).toFixed(2)} KB</span>}
         </div>
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-green-500" />
