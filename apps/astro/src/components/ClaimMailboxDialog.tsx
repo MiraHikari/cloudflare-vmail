@@ -12,8 +12,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from './ui/dialog'
+import { Field, FieldDescription, FieldGroup, FieldLabel } from './ui/field'
 import { Input } from './ui/input'
-import { Label } from './ui/label'
+import { Spinner } from './ui/spinner'
 
 interface ClaimMailboxDialogProps {
   mailboxAddress: string
@@ -29,8 +30,8 @@ export function ClaimMailboxDialog({ mailboxAddress }: ClaimMailboxDialogProps) 
   const handleClaim = async () => {
     setError('')
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters')
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters')
       return
     }
 
@@ -64,8 +65,8 @@ export function ClaimMailboxDialog({ mailboxAddress }: ClaimMailboxDialogProps) 
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
-          <Shield className="h-4 w-4 mr-2" />
-          Claim This Mailbox
+          <Shield />
+          Claim mailbox
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
@@ -77,25 +78,26 @@ export function ClaimMailboxDialog({ mailboxAddress }: ClaimMailboxDialogProps) 
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="mailbox">Mailbox Address</Label>
+        <FieldGroup>
+          <Field>
+            <FieldLabel htmlFor="mailbox">Mailbox Address</FieldLabel>
             <Input id="mailbox" value={mailboxAddress} disabled />
-          </div>
+          </Field>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+          <Field>
+            <FieldLabel htmlFor="password">Password</FieldLabel>
             <Input
               id="password"
               type="password"
-              placeholder="At least 6 characters"
+              placeholder="At least 8 characters"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-          </div>
+            <FieldDescription>Must be at least 8 characters long.</FieldDescription>
+          </Field>
 
-          <div className="space-y-2">
-            <Label htmlFor="confirm-password">Confirm Password</Label>
+          <Field>
+            <FieldLabel htmlFor="confirm-password">Confirm Password</FieldLabel>
             <Input
               id="confirm-password"
               type="password"
@@ -103,29 +105,30 @@ export function ClaimMailboxDialog({ mailboxAddress }: ClaimMailboxDialogProps) 
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
-          </div>
+          </Field>
+        </FieldGroup>
 
-          {error && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          <Alert>
-            <Lock className="h-4 w-4" />
-            <AlertDescription>
-              Once claimed, this mailbox will require your password to access. Make sure to remember
-              it!
-            </AlertDescription>
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircle />
+            <AlertDescription>{error}</AlertDescription>
           </Alert>
-        </div>
+        )}
+
+        <Alert>
+          <Lock />
+          <AlertDescription>
+            Once claimed, this mailbox will require your password to access. Make sure to remember
+            it!
+          </AlertDescription>
+        </Alert>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)} disabled={loading}>
             Cancel
           </Button>
           <Button onClick={handleClaim} disabled={loading}>
+            {loading && <Spinner />}
             {loading ? 'Claiming...' : 'Claim Mailbox'}
           </Button>
         </DialogFooter>

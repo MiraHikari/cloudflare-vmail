@@ -1,80 +1,62 @@
 import { actions } from 'astro:actions'
 import { navigate } from 'astro:transitions/client'
-import { toast } from '@/hooks/use-toast'
-import { Button } from './ui/button'
+import { Trash2 } from 'lucide-react'
+import { toast } from 'sonner'
 import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from './ui/drawer'
-import { ToastAction } from './ui/toast'
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from './ui/alert-dialog'
+import { Button } from './ui/button'
 
 export default function DeleteEveryThingButton({ isDisabled }: { isDisabled: boolean }) {
   return (
-    <Drawer>
-      <DrawerTrigger disabled={isDisabled}>
-        <Button
-          variant="destructive"
-          disabled={isDisabled}
-          className="mt-4 py-2.5 rounded-md w-full hover:opacity-90 disabled:cursor-not-allowed"
-        >
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button variant="destructive" disabled={isDisabled} className="w-full">
+          <Trash2 aria-hidden="true" />
           Delete All Emails
         </Button>
-      </DrawerTrigger>
-      <DrawerContent>
-        <div className="mx-auto w-full max-w-sm">
-          <DrawerHeader>
-            <DrawerTitle>
-              Are you sure
-              <span className="text-destructive"> to delete all emails?</span>
-            </DrawerTitle>
-            <DrawerDescription>
-              The data cannot
-              <span className="text-destructive"> be recovered</span>
-            </DrawerDescription>
-          </DrawerHeader>
-          <DrawerFooter>
-            <Button
-              onClick={async () => {
-                const { error } = await actions.deleteAllEmailsByMessageTo()
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete all emails?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This will permanently delete every email in this mailbox. The data cannot be recovered.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            variant="destructive"
+            onClick={async () => {
+              const { error } = await actions.deleteAllEmailsByMessageTo()
 
-                if (error) {
-                  return toast({
-                    variant: 'destructive',
-                    title: 'Uh oh! Something went wrong.',
-                    description: error.message,
-                  })
-                }
-
-                return toast({
-                  title: 'Deleted',
-                  description: `All data deleted`,
-                  action: (
-                    <ToastAction
-                      altText="Reload page to update the data"
-                      onClick={() => navigate('/')}
-                    >
-                      Reload Page
-                    </ToastAction>
-                  ),
+              if (error) {
+                return toast.error('Uh oh! Something went wrong.', {
+                  description: error.message,
                 })
-              }}
-            >
-              Confirm
-            </Button>
-            <DrawerClose>
-              <Button variant="outline" className="w-full">
-                Cancel
-              </Button>
-            </DrawerClose>
-          </DrawerFooter>
-        </div>
-      </DrawerContent>
-    </Drawer>
+              }
+
+              return toast('Deleted', {
+                description: 'All data deleted',
+                action: {
+                  label: 'Reload Page',
+                  onClick: () => navigate('/'),
+                },
+              })
+            }}
+          >
+            Delete
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }

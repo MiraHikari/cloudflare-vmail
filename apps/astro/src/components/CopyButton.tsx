@@ -1,20 +1,24 @@
 import type { ButtonHTMLAttributes, DetailedHTMLProps } from 'react'
-import { Icon } from '@iconify/react'
+import { Check, Copy, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
+import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 import { Button } from './ui/button'
 
-interface CopyButtonProps
-  extends DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> {
+interface CopyButtonProps extends DetailedHTMLProps<
+  ButtonHTMLAttributes<HTMLButtonElement>,
+  HTMLButtonElement
+> {
   content: string
 }
 
-export default function CopyButton({ content, ...props }: CopyButtonProps) {
+export default function CopyButton({ content, className, ...props }: CopyButtonProps) {
   const [status, setStatus] = useState<keyof typeof icons>('idle')
 
   const icons = {
-    idle: <Icon icon="ph:copy" className="h-4 w-4" />,
-    error: <Icon icon="mdi:exclamation" className="h-4 w-4 text-red-500" />,
-    success: <Icon icon="mdi:check" className="h-4 w-4 text-green-500" />,
+    idle: <Copy className="size-4" />,
+    error: <TriangleAlert className="size-4 text-destructive" />,
+    success: <Check className="size-4 text-primary" />,
   }
 
   const tooltips = {
@@ -28,6 +32,9 @@ export default function CopyButton({ content, ...props }: CopyButtonProps) {
     if (!content || typeof content !== 'string') {
       setStatus('error')
       setTimeout(() => setStatus('idle'), 2000)
+      toast.error('Failed to copy', {
+        description: 'Nothing to copy',
+      })
       return
     }
 
@@ -37,6 +44,7 @@ export default function CopyButton({ content, ...props }: CopyButtonProps) {
         await navigator.clipboard.writeText(content)
         setStatus('success')
         setTimeout(() => setStatus('idle'), 2000)
+        toast.success('Copied to clipboard')
         return
       }
 
@@ -52,13 +60,21 @@ export default function CopyButton({ content, ...props }: CopyButtonProps) {
       try {
         textArea.focus()
         textArea.select()
-        const successful = document.execCommand('copy')
+        // `execCommand` remains the fallback for insecure contexts and older browsers.
+        const legacyDocument = document as unknown as {
+          execCommand: (commandId: string) => boolean
+        }
+        const successful = legacyDocument.execCommand('copy')
         document.body.removeChild(textArea)
 
         if (successful) {
           setStatus('success')
+          toast.success('Copied to clipboard')
         } else {
           setStatus('error')
+          toast.error('Failed to copy', {
+            description: 'Please copy it manually',
+          })
         }
       } catch (err) {
         document.body.removeChild(textArea)
@@ -66,6 +82,9 @@ export default function CopyButton({ content, ...props }: CopyButtonProps) {
       }
     } catch {
       setStatus('error')
+      toast.error('Failed to copy', {
+        description: 'Please copy it manually',
+      })
     } finally {
       setTimeout(() => setStatus('idle'), 2000)
     }
@@ -78,7 +97,12 @@ export default function CopyButton({ content, ...props }: CopyButtonProps) {
       {...props}
       onClick={copy}
       title={tooltips[status]}
-      className={`transition-all ${status === 'success' ? 'bg-green-500/10' : status === 'error' ? 'bg-red-500/10' : ''} ${props.className || ''}`}
+      className={cn(
+        'transition-colors',
+        status === 'success' && 'bg-primary/10',
+        status === 'error' && 'bg-destructive/10',
+        className
+      )}
     >
       {icons[status]}
     </Button>

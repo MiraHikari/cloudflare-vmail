@@ -1,7 +1,7 @@
 ---
 title: 'Development Guide'
 description: 'How to set up and run the project locally for development'
-lastUpdated: 2025-02-23
+lastUpdated: 2026-08-03
 ---
 
 import { CodeBlock } from '@/components/CodeBlock'
@@ -12,16 +12,20 @@ Get the project running locally in minutes with our streamlined development setu
 
 ### Prerequisites
 
-- **Node.js** 20+ (we recommend using [nvm](https://github.com/nvm-sh/nvm))
-- **pnpm** 10+ (package manager)
+- **Node.js** 22.12+ (we recommend using [nvm](https://github.com/nvm-sh/nvm))
+- **pnpm** 10.17+ (package manager)
 - **Git**
 
 ### Installation
 
 1. **Clone the repository**
 
-<CodeBlock code={`git clone https://github.com/yourusername/vmail.git
-cd vmail`} language="bash" client:load />
+<CodeBlock
+  code={`git clone https://github.com/MiraHikari/cloudflare-vmail.git
+cd cloudflare-vmail`}
+  language="bash"
+  client:load
+/>
 
 2. **Install dependencies**
 
@@ -37,27 +41,20 @@ The application will be available at `http://localhost:4321`.
 
 ### Environment Variables
 
-Create a `.env.development` file in `apps/astro/` for local development overrides:
+Copy `.dev.vars.example` to `.dev.vars` in `apps/astro/`. This file is ignored by
+Git and is used by Wrangler for local Worker secrets:
 
-<CodeBlock code={`# Development Mode Flag
-DEV_MODE=true
+<CodeBlock
+  code={`cp apps/astro/.dev.vars.example apps/astro/.dev.vars
 
-# Mock Data Configuration
-USE_MOCK_DATA=true
-MOCK_EMAIL_COUNT=5
+# Add DEV_MODE=true and USE_MOCK_DATA=true to apps/astro/.dev.vars when you need mock data.`}
 
-# Turnstile Configuration (disabled in dev)
-TURNSTILE_SECRET=dev-secret
-TURNSTILE_SITE_KEY=1x00000000000000000000AA
+language="bash"
+client:load
+/>
 
-# Site Configuration
-SITE_NAME="Vmail (Dev)"
-SITE_DESCRIPTION="Development environment for Vmail"
-JWT_SECRET=dev-jwt-secret-do-not-use-in-production
-COOKIE_EXPIRES_IN_SECONDS=86400
-
-# Mail Domain
-MAIL_DOMAIN="example.com,test.local"`} language="bash" client:load />
+Keep production values out of this file. Store `JWT_SECRET`, `BATCH_ADMIN_TOKEN`, and
+`TURNSTILE_SECRET` with `wrangler secret put` during deployment.
 
 ### Development Features
 
@@ -89,7 +86,8 @@ Test on different screen sizes:
 
 ## Project Structure
 
-<CodeBlock code={`apps/
+<CodeBlock
+  code={`apps/
 ├── astro/                    # Main frontend application
 │   ├── src/
 │   │   ├── actions/         # Astro Actions (API endpoints)
@@ -99,8 +97,8 @@ Test on different screen sizes:
 │   │   ├── lib/             # Utility functions
 │   │   ├── pages/           # Route pages
 │   │   └── styles/          # Global styles
-│   ├── .env.development     # Dev environment variables
-│   └── wrangler.toml        # Cloudflare configuration
+│   ├── .dev.vars.example    # Local Worker secret template
+│   └── wrangler.jsonc       # Cloudflare Worker configuration
 │
 ├── emails-worker/           # Cloudflare Worker for email processing
 │   └── src/
@@ -109,19 +107,25 @@ Test on different screen sizes:
 packages/
 └── database/                # Database schema and DAO
     ├── schema.ts            # Drizzle schema definitions
-    └── dao.ts               # Data access objects`} language="text" client:load />
+    ├── dao.ts               # Data access objects
+    └── drizzle/             # SQL migrations`}
+  language="text"
+  client:load
+/>
 
 ## Available Scripts
 
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | Start development server with hot reload |
-| `pnpm build` | Build for production |
-| `pnpm preview` | Preview production build locally |
-| `pnpm lint` | Run ESLint with auto-fix |
-| `pnpm lint:check` | Run ESLint without fixing |
-| `pnpm type-check` | Run TypeScript type checking |
-| `pnpm format` | Format code with Prettier |
+| Command                       | Description                                       |
+| ----------------------------- | ------------------------------------------------- |
+| `pnpm dev`                    | Start development server with hot reload          |
+| `pnpm build`                  | Build for production                              |
+| `pnpm --filter astro preview` | Preview the Astro Worker build locally            |
+| `pnpm lint`                   | Run ESLint with auto-fix                          |
+| `pnpm lint:check`             | Run ESLint without fixing                         |
+| `pnpm type-check`             | Run TypeScript type checking                      |
+| `pnpm test`                   | Run database, Astro, and Worker tests             |
+| `pnpm verify`                 | Run formatting, lint, type, test, and build gates |
+| `pnpm format`                 | Format code with Prettier                         |
 
 ## Database Setup (Optional)
 
@@ -137,21 +141,20 @@ For full functionality with real data, set up a Cloudflare D1 database:
 
 3. **Create D1 Database**
 
-<CodeBlock code={`wrangler d1 create vmail-dev`} language="bash" client:load />
+<CodeBlock code={`wrangler d1 create vmail-db`} language="bash" client:load />
 
-4. **Update wrangler.toml**
+4. **Update Worker configuration**
 
-Add your database ID to `apps/astro/wrangler.toml`:
-
-<CodeBlock code={`[[d1_databases]]
-binding = "DB"
-database_name = "vmail-dev"
-database_id = "your-database-id-here"`} language="toml" client:load />
+Add the database ID returned by Wrangler to `database_id` in both
+`apps/astro/wrangler.jsonc` and `apps/emails-worker/wrangler.jsonc`.
 
 5. **Run Migrations**
 
-<CodeBlock code={`cd packages/database
-pnpm db:push`} language="bash" client:load />
+<CodeBlock
+  code={`pnpm --filter astro exec wrangler d1 migrations apply vmail-db --local --config wrangler.jsonc`}
+  language="bash"
+  client:load
+/>
 
 ## Mock Data API
 
@@ -197,12 +200,12 @@ localStorage.setItem('debug', 'true')
 
 ### Common Issues
 
-| Issue | Solution |
-|-------|----------|
-| Port 4321 in use | Change port: `pnpm dev -- --port 3000` |
-| Database connection failed | Check `wrangler.toml` configuration |
-| Type errors | Run `pnpm type-check` to identify issues |
-| Build fails | Clear cache: `rm -rf .astro dist` |
+| Issue                      | Solution                                 |
+| -------------------------- | ---------------------------------------- |
+| Port 4321 in use           | Change port: `pnpm dev -- --port 3000`   |
+| Database connection failed | Check both `wrangler.jsonc` D1 bindings  |
+| Type errors                | Run `pnpm type-check` to identify issues |
+| Build fails                | Clear cache: `rm -rf .astro dist`        |
 
 ## Contributing
 

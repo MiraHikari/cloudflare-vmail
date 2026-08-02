@@ -1,29 +1,26 @@
 import { actions } from 'astro:actions'
 import { navigate } from 'astro:transitions/client'
-import { useToast } from '@/hooks/use-toast'
+import { LogOut } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from './ui/button'
-import { ToastAction } from './ui/toast'
 
 export default function ExitButton() {
-  const { toast } = useToast()
-
   return (
     <Button
-      variant="default"
+      variant="outline"
       onClick={async () => {
         await actions.exit()
-        return toast({
-          title: 'Exited',
-          description: `Please reload page to update the state.`,
-          action: (
-            <ToastAction altText="Reload page to exit" onClick={() => navigate('/')}>
-              Reload Page
-            </ToastAction>
-          ),
+        return toast('Exited', {
+          description: 'Please reload page to update the state.',
+          action: {
+            label: 'Reload Page',
+            onClick: () => navigate('/'),
+          },
         })
       }}
-      className="py-2.5 rounded-md w-full hover:opacity-90 disabled:cursor-not-allowed disabled:bg-zinc-500max-w-[300px]"
+      className="w-full"
     >
+      <LogOut aria-hidden="true" />
       Exit
     </Button>
   )

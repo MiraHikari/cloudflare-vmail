@@ -3,7 +3,7 @@
 > A modern, privacy-focused temporary email service powered entirely by Cloudflare's edge network.
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Astro](https://img.shields.io/badge/Astro-5.14-orange.svg)](https://astro.build)
+[![Astro](https://img.shields.io/badge/Astro-7.1-orange.svg)](https://astro.build)
 [![Cloudflare](https://img.shields.io/badge/Cloudflare-Workers-orange.svg)](https://workers.cloudflare.com)
 
 Inspired by **[oiov/vmail](https://github.com/oiov/vmail)**. This project has been completely rewritten with modern technologies and enhanced features.
@@ -23,7 +23,8 @@ Inspired by **[oiov/vmail](https://github.com/oiov/vmail)**. This project has be
 
 ### Technical Features
 
-- 🚀 **100% Serverless** - Runs entirely on Cloudflare (Workers + Pages + D1)
+- 🚀 **100% Serverless** - Runs entirely on Cloudflare Workers + D1
+- 📦 **Batch Provisioning** - Create up to 100 permanent mailboxes atomically
 - 🛡️ **Bot Protection** - Integrated Cloudflare Turnstile
 - 🎯 **Type Safety** - Full TypeScript implementation
 - 🎭 **Smooth Animations** - Refined page transitions and interactions
@@ -38,7 +39,7 @@ Inspired by **[oiov/vmail](https://github.com/oiov/vmail)**. This project has be
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
 │  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐ │
-│  │ Email Worker │───▶│  Cloudflare  │◀───│ Astro Pages  │ │
+│  │ Email Worker │───▶│  Cloudflare  │◀───│ Astro Worker │ │
 │  │ (Receives)   │    │     D1       │    │  (Frontend)  │ │
 │  └──────────────┘    │  (Storage)   │    └──────────────┘ │
 │                      └──────────────┘                      │
@@ -48,7 +49,7 @@ Inspired by **[oiov/vmail](https://github.com/oiov/vmail)**. This project has be
 
 **Tech Stack:**
 
-- **Frontend**: Astro 5.14 + React 19 + Tailwind CSS 4
+- **Frontend**: Astro 7.1 + React 19 + Tailwind CSS 4 on the Cloudflare Workers adapter
 - **Email Worker**: Cloudflare Email Worker + postal-mime
 - **Database**: Cloudflare D1 (SQLite)
 - **Authentication**: JWT (jose)
@@ -57,8 +58,8 @@ Inspired by **[oiov/vmail](https://github.com/oiov/vmail)**. This project has be
 
 ## 📋 Prerequisites
 
-- [Node.js](https://nodejs.org) >= 18
-- [pnpm](https://pnpm.io) >= 8
+- [Node.js](https://nodejs.org) >= 22.12
+- [pnpm](https://pnpm.io) >= 10.17
 - Cloudflare account with:
   - Email routing enabled
   - D1 database created
@@ -69,76 +70,33 @@ Inspired by **[oiov/vmail](https://github.com/oiov/vmail)**. This project has be
 ### 1. Clone and Install
 
 ```bash
-git clone https://github.com/yourusername/cloudflare-vmails.git
-cd cloudflare-vmails
+git clone https://github.com/MiraHikari/cloudflare-vmail.git
+cd cloudflare-vmail
 pnpm install
 ```
 
 ### 2. Configure Cloudflare D1
 
-Create a D1 database:
+Create the database once, then replace the placeholder `database_id` in both
+`apps/astro/wrangler.jsonc` and `apps/emails-worker/wrangler.jsonc` with the ID
+returned by Wrangler:
 
 ```bash
-cd apps/astro
-wrangler d1 create vmail-db
+pnpm --filter astro exec wrangler d1 create vmail-db
 ```
 
-Apply database schema:
+Apply the tracked Drizzle migrations to the local database while developing and
+to the remote database before deployment:
 
 ```bash
-cd ../emails-worker
-wrangler d1 execute vmail-db --file=../../packages/database/schema.sql
+pnpm --filter astro exec wrangler d1 migrations apply vmail-db --local --config wrangler.jsonc
+pnpm --filter astro exec wrangler d1 migrations apply vmail-db --remote --config wrangler.jsonc
 ```
 
-### 3. Configure Environment
-
-Create `apps/astro/wrangler.toml`:
-
-```toml
-# :schema node_modules/wrangler/config-schema.json
-name = "vmail-app"
-compatibility_date = "2024-09-25"
-pages_build_output_dir = "./dist"
-
-[vars]
-# Cloudflare Turnstile (https://dash.cloudflare.com/?to=/:account/turnstile)
-TURNSTILE_SECRET = "your-turnstile-secret"
-TURNSTILE_SITE_KEY = "your-turnstile-site-key"
-
-# Email configuration
-MAIL_DOMAIN = "your-domain.com"
-
-# Security
-JWT_SECRET = "your-random-jwt-secret-min-32-chars"
-COOKIE_EXPIRES_IN_SECONDS = 86400  # 24 hours
-
-# Site information
-SITE_NAME = "Your VMail Service"
-SITE_DESCRIPTION = "Privacy-focused temporary email service"
-
-# Optional: Email sending via Mailgun
-# MAILGUN_BASE_URL = "https://api.mailgun.net"
-# MAILGUN_API_KEY = "your-mailgun-api-key"
-# MAILGUN_SEND_DOMAIN = "your-mailgun-domain.com"
-
-[[d1_databases]]
-binding = "DB"  # DO NOT CHANGE
-database_name = "vmail-db"
-database_id = "your-database-id"
-```
-
-Create `apps/emails-worker/wrangler.toml`:
-
-```toml
-name = "vmail-email-worker"
-compatibility_date = "2024-09-25"
-main = "src/index.ts"
-
-[[d1_databases]]
-binding = "DB"  # DO NOT CHANGE
-database_name = "vmail-db"
-database_id = "your-database-id"
-```
+For local development, copy `apps/astro/.dev.vars.example` to
+`apps/astro/.dev.vars` and set private values. Production `JWT_SECRET`,
+`BATCH_ADMIN_TOKEN`, and `TURNSTILE_SECRET` must be stored with `wrangler secret put`;
+do not place them in `wrangler.jsonc` or commit them.
 
 ### 4. Configure Email Routing
 
@@ -154,18 +112,18 @@ database_id = "your-database-id"
 pnpm dev
 
 # Or start individually
-pnpm --filter astro dev        # Frontend at http://localhost:4321
-pnpm --filter email-worker dev # Email worker
+pnpm --filter astro dev        # Astro Worker dev server at http://localhost:4321
+pnpm --filter email-worker dev # Email Worker
 ```
 
 ### 6. Deploy
 
 ```bash
-# Deploy email worker first
+# Deploy the email worker first
 cd apps/emails-worker
 pnpm deploy
 
-# Deploy frontend
+# Deploy the Astro Worker
 cd ../astro
 pnpm deploy
 ```
@@ -173,7 +131,7 @@ pnpm deploy
 ## 📁 Project Structure
 
 ```
-emails/
+cloudflare-vmail/
 ├── apps/
 │   ├── astro/              # Frontend application
 │   │   ├── src/
@@ -183,16 +141,16 @@ emails/
 │   │   │   ├── layouts/    # Page layouts
 │   │   │   ├── lib/        # Utilities
 │   │   │   └── pages/      # Route pages
-│   │   └── wrangler.toml
+│   │   └── wrangler.jsonc
 │   └── emails-worker/      # Email receiver worker
 │       ├── src/
 │       │   └── index.ts
-│       └── wrangler.toml
+│       └── wrangler.jsonc
 └── packages/
     └── database/           # Shared database package
         ├── dao.ts          # Data access layer
         ├── db.ts           # Database client
-        └── schema.sql      # Database schema
+        └── drizzle/        # Drizzle SQL migrations
 ```
 
 ## 🔑 Key Features Explained
@@ -202,14 +160,21 @@ emails/
 **Temporary Mailbox**
 
 - No registration required
-- Valid for 24 hours (configurable)
-- Anyone with the mailbox ID can access
+- API access token valid for 7 days
+- Email access requires the mailbox-scoped Bearer token returned at creation
 
 **Claimed Mailbox**
 
 - Password protected
-- Permanent storage
-- Private and secure
+- Valid for 30 days and protected by a password
+- Claiming revokes the anonymous temporary API token
+- Existing SHA-256 credentials are upgraded to PBKDF2 at login
+
+**Permanent API Mailbox**
+
+- Created through `POST /api/v2/mailboxes/batch` with an administrator Bearer token
+- Up to 100 accounts per atomic request; `expiresAt` is always `null`
+- Each response includes a unique password and a 24-hour mailbox access token
 
 ### OTP Detection
 
@@ -223,9 +188,11 @@ Automatically detects and extracts verification codes from emails:
 
 - JWT-based authentication
 - Cloudflare Turnstile bot protection
-- CORS and rate limiting ready
+- Authentication and mailbox-scoped authorization on every API route
+- Public password login has best-effort per-isolate throttling and bounded PBKDF2 concurrency
+- Add Cloudflare WAF/Edge Rate Limiting (or a shared Durable Object) for service-wide brute-force protection
 - Password hashing for claimed mailboxes
-- Automatic email expiration
+- Temporary access tokens expire after 7 days; email data cleanup is a separate retention policy
 
 ## 🎨 Customization
 
@@ -244,7 +211,8 @@ The project uses Tailwind CSS 4 with CSS variables for theming. Customize colors
 
 ### Email Domains
 
-Add multiple domains in your `wrangler.toml` by setting up email routing for each domain and updating the `MAIL_DOMAIN` variable.
+Add multiple domains to `AVAILABLE_DOMAINS` in the Astro Worker configuration,
+set up email routing for each domain, and place the preferred default first.
 
 ## 📝 Commands
 
@@ -299,7 +267,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 If you have any questions or need help, please:
 
 - Open an issue on GitHub
-- Check the [documentation](docs/)
+- Check the in-app API documentation at `/docs/api-docs` after starting the Astro Worker
 - Review existing issues and discussions
 
 ---

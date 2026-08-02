@@ -1,24 +1,27 @@
 ---
 title: 'Developer API'
 description: 'Complete API documentation for developers'
-lastUpdated: 2025-10-03
+lastUpdated: 2026-08-03
 ---
 
 import { CodeBlock } from '@/components/CodeBlock'
 
 ## Overview
 
-The API allows you to programmatically create temporary mailboxes,
-retrieve emails, and manage email data. Perfect for automated testing, CI/CD pipelines,
-and integration workflows.
+The API allows you to programmatically create temporary or permanent mailboxes,
+retrieve emails, and manage email data. It is designed for automated testing, CI/CD
+pipelines, and integration workflows.
 
 <div class="not-prose my-6">
   <div class="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
     <div class="flex items-start gap-3">
       <div class="text-blue-600 dark:text-blue-400 mt-0.5">ℹ️</div>
       <div class="text-sm text-blue-800 dark:text-blue-300">
-        <strong>Base URL:</strong>{' '}
-        <code class="bg-blue-100 dark:bg-blue-900/50 px-2 py-0.5 rounded">/api/v1</code>
+        <strong>Base URLs:</strong>{' '}
+        <code class="bg-blue-100 dark:bg-blue-900/50 px-2 py-0.5 rounded">/api/v1</code> for
+        temporary mailboxes and{' '}
+        <code class="bg-blue-100 dark:bg-blue-900/50 px-2 py-0.5 rounded">/api/v2</code> for
+        permanent mailbox provisioning.
       </div>
     </div>
   </div>
@@ -64,13 +67,136 @@ Include your token in the `Authorization` header as a Bearer token:
           <li>Tokens expire after 7 days</li>
           <li>Store tokens securely and never commit them to version control</li>
           <li>Each mailbox creation generates a new token</li>
+          <li>Claiming a mailbox revokes its anonymous temporary API token</li>
         </ul>
       </div>
     </div>
   </div>
 </div>
 
-## API Endpoints
+## API v2: Permanent Mailboxes
+
+Version 2 provisions mailboxes whose account lifetime never expires. The access token
+still expires after 24 hours and can be renewed with the mailbox password. Batch creation
+is administrator-only and atomic: either every requested mailbox is created or none is.
+
+### Batch Create Permanent Mailboxes
+
+Create between 1 and 100 permanent mailboxes in one request. Set `BATCH_ADMIN_TOKEN` as a
+Worker secret and send it as a Bearer token. The generated passwords are returned only in
+this response, so store them securely.
+
+<CodeBlock
+  code={`curl -X POST /api/v2/mailboxes/batch \\
+  -H "Authorization: Bearer ADMIN_TOKEN" \\
+  -H "Content-Type: application/json" \\
+  -d '{"count":2,"domain":"example.com"}'`}
+  language="bash"
+  client:load
+/>
+
+<CodeBlock
+  code={JSON.stringify(
+    {
+      success: true,
+      batch: {
+        id: 'f4e2c7b0-3c0f-4e5b-9f4d-9a1c2e6c2a10',
+        count: 2,
+        createdAt: '2026-08-03T12:00:00.000Z',
+      },
+      mailboxes: [
+        {
+          address: 'mbx-7a9f@example.com',
+          password: 'generated-password',
+          accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+          tokenType: 'Bearer',
+          tokenExpiresIn: 86400,
+          accountExpiresAt: null,
+        },
+        {
+          address: 'mbx-91c2@example.com',
+          password: 'another-generated-password',
+          accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+          tokenType: 'Bearer',
+          tokenExpiresIn: 86400,
+          accountExpiresAt: null,
+        },
+      ],
+    },
+    null,
+    2
+  )}
+  language="json"
+  className="text-xs"
+  client:load
+/>
+
+### Renew a Mailbox Access Token
+
+Exchange a permanent mailbox address and its password for a new 24-hour access token.
+
+<CodeBlock
+  code={`curl -X POST /api/v2/auth/token \\
+  -H "Content-Type: application/json" \\
+  -d '{"address":"mbx-7a9f@example.com","password":"generated-password"}'`}
+  language="bash"
+  client:load
+/>
+
+The response contains `accessToken`, `tokenType: "Bearer"`, `expiresIn: 86400`, and
+`mailbox.accountExpiresAt: null`.
+
+Password login is throttled per Worker isolate and PBKDF2 verification is concurrency-limited.
+For public production traffic, configure Cloudflare WAF or Edge Rate Limiting as the global
+brute-force control; isolate-local throttling cannot share counters across regions.
+
+### Permanent Mailbox Emails
+
+Use the access token returned by batch creation or login for all three mailbox-scoped routes:
+
+| Method   | Route                                   | Description                                                                      |
+| -------- | --------------------------------------- | -------------------------------------------------------------------------------- |
+| `GET`    | `/api/v2/mailboxes/:address/emails`     | List messages. Supports `limit` (1-100), `offset`, and `unread_only=true/false`. |
+| `GET`    | `/api/v2/mailboxes/:address/emails/:id` | Read one complete message, including text, HTML, and headers.                    |
+| `DELETE` | `/api/v2/mailboxes/:address/emails/:id` | Delete one message from that mailbox.                                            |
+
+Every request must include `Authorization: Bearer MAILBOX_ACCESS_TOKEN`. Email IDs are
+always checked against the path mailbox, so a valid token cannot read or delete another
+mailbox's message.
+
+<CodeBlock
+  code={`curl -X GET \\
+  "/api/v2/mailboxes/mbx-7a9f@example.com/emails?limit=20&unread_only=true" \\
+  -H "Authorization: Bearer MAILBOX_ACCESS_TOKEN"`}
+  language="bash"
+  client:load
+/>
+
+## Error Response Format
+
+Version 2 API errors use one stable JSON envelope. `details` is included for validation errors
+when the client needs field-level information.
+
+<CodeBlock
+  code={JSON.stringify(
+    {
+      error: {
+        code: 'INVALID_TOKEN',
+        message: 'The mailbox access token is invalid or expired',
+      },
+    },
+    null,
+    2
+  )}
+  language="json"
+  className="text-xs"
+  client:load
+/>
+
+Common v2 error codes include `AUTHENTICATION_REQUIRED`, `INVALID_ADMIN_TOKEN`,
+`INVALID_CREDENTIALS`, `INVALID_TOKEN`, `MAILBOX_FORBIDDEN`, `EMAIL_NOT_FOUND`,
+`MAILBOX_ADDRESS_CONFLICT`, `NOT_PERMANENT_MAILBOX`, `LOGIN_RATE_LIMITED`, `LOGIN_BUSY`,
+`PAYLOAD_TOO_LARGE`, and `VALIDATION_ERROR`.
 
 ### Create Temporary Mailbox
 

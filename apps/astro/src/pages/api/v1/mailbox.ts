@@ -1,63 +1,40 @@
 import type { APIRoute } from 'astro'
-import { generateNewMailAddr, genMailboxAccessToken } from '@/lib/utils'
+import { z } from 'zod'
+import { ApiError, apiErrorResponse, jsonResponse, parseJsonBody } from '@/lib/api'
+import { createTemporaryMailboxToken } from '@/lib/auth'
+import { generateMailboxAddress } from '@/lib/mailbox-api'
+import { getAvailableDomains, getRuntimeBindings } from '@/lib/runtime'
 
-/**
- * POST /api/v1/mailbox
- * Create a new temporary mailbox and get access token
- *
- * Body (optional):
- *   domain: string - Custom domain (optional, uses default if not provided)
- *
- * Response:
- *   {
- *     success: true,
- *     mailbox: {
- *       address: string,
- *       token: string,
- *       expiresIn: string,
- *       createdAt: string
- *     }
- *   }
- */
-export const POST: APIRoute = async ({ request, locals }) => {
+const requestSchema = z.object({ domain: z.string().trim().toLowerCase().optional() })
+
+export const POST: APIRoute = async ({ request }) => {
   try {
-    // Parse request body
-    let domain: string | undefined
-    try {
-      const body = (await request.json()) as { domain?: string }
-      domain = body.domain
-    } catch {
-      // If no body or invalid JSON, use default domain
+    let requestedDomain: string | undefined
+    if (request.headers.get('content-type')?.toLowerCase().includes('application/json')) {
+      requestedDomain = (await parseJsonBody(request, requestSchema, { allowEmpty: true })).domain
     }
 
-    // Get available domains from environment
-    const availableDomains = String(locals.runtime.env.AVAILABLE_DOMAINS).split(',')
-    const selectedDomain =
-      (domain && availableDomains.includes(domain) ? domain : availableDomains[0]) || 'example.com'
+    const env = getRuntimeBindings()
+    const domains = getAvailableDomains(env)
+    if (requestedDomain && !domains.includes(requestedDomain)) {
+      throw new ApiError(400, 'DOMAIN_NOT_ALLOWED', 'The requested mailbox domain is not allowed')
+    }
+    const domain = requestedDomain ?? domains[0]!
+    const address = generateMailboxAddress(domain)
 
-    // Generate new mailbox
-    const mailboxAddress = generateNewMailAddr(selectedDomain)
-
-    // Generate access token
-    const accessToken = await genMailboxAccessToken(mailboxAddress, locals.runtime.env.JWT_SECRET)
-
-    return new Response(
-      JSON.stringify({
+    return jsonResponse(
+      {
         success: true,
         mailbox: {
-          address: mailboxAddress,
-          token: accessToken,
+          address,
+          token: await createTemporaryMailboxToken(address, env.JWT_SECRET),
           expiresIn: '7 days',
-          createdAt: new Date().toISOString(),
+          createdAt: new Date(),
         },
-      }),
-      { status: 201, headers: { 'Content-Type': 'application/json' } }
+      },
+      { status: 201 }
     )
   } catch (error) {
-    console.error('API Error:', error)
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    })
+    return apiErrorResponse(error)
   }
 }

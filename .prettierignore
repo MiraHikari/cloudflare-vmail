@@ -2,6 +2,7 @@
 **/dist/**
 **/.astro/**
 **/.wrangler/**
+**/worker-configuration.d.ts
 **/drizzle/**
 pnpm-lock.yaml
 .husky/_

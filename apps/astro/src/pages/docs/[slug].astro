@@ -1,8 +1,9 @@
 ---
-import { getCollection, getEntry, render } from 'astro:content'
+import { getEntry, render } from 'astro:content'
 import DocsLayout from '@/layouts/DocsLayout.astro'
+import { getRuntimeBindings } from '@/lib/runtime'
 
-const Env = Astro.locals.runtime.env
+const env = getRuntimeBindings()
 
 const { slug } = Astro.params
 if (!slug) {
@@ -27,7 +28,7 @@ const lastUpdated = entry.data.lastUpdated
 ---
 
 <DocsLayout
-  title={`${entry.data.title} - ${Env.SITE_NAME}`}
+  title={`${entry.data.title} - ${env.SITE_NAME}`}
   description={entry.data.description}
   pageTitle={entry.data.title}
   lastUpdated={lastUpdated}

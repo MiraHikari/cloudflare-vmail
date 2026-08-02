@@ -1,5 +1,4 @@
 ---
-import { Dock } from '../components/Dock'
 import '../globals.css'
 
 interface Props {
@@ -8,35 +7,32 @@ interface Props {
 }
 
 const { title, description } = Astro.props
-const Env = Astro.locals.runtime.env
 ---
-
-<script is:inline>
-  function applyTheme() {
-    function getThemePreference() {
-      if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
-        return localStorage.getItem('theme')
-      }
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-    }
-    const isDark = getThemePreference() === 'dark'
-    document.documentElement.classList[isDark ? 'add' : 'remove']('dark')
-  }
-
-  // Apply theme immediately on page load
-  applyTheme()
-</script>
 
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="description" content={description} />
     <meta name="viewport" content="width=device-width" />
-    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" type="image/webp" href="/avatar.webp" />
     <title>{title}</title>
+    <script is:inline>
+      // Apply the theme before first paint to avoid a flash of the wrong theme
+      function applyTheme() {
+        function getThemePreference() {
+          if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
+            return localStorage.getItem('theme')
+          }
+          return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        }
+        const isDark = getThemePreference() === 'dark'
+        document.documentElement.classList[isDark ? 'add' : 'remove']('dark')
+      }
+
+      applyTheme()
+    </script>
   </head>
   <body>
     <slot />
-    <Dock client:only="react" />
   </body>
 </html>

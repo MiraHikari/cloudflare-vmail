@@ -1,6 +1,5 @@
 ---
-import { Menu, X } from 'lucide-react'
-import PageHeader from '@/components/PageHeader.astro'
+import { ArrowLeft, ChevronDown, List } from 'lucide-react'
 import Layout from '@/layouts/Layout.astro'
 
 interface Props {
@@ -18,56 +17,88 @@ const tocHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3)
 ---
 
 <Layout title={title} description={description}>
-  <PageHeader title={pageTitle} description={description} showBackButton={true} />
+  <main class="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 sm:pb-24">
+    <a
+      href="/"
+      class="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+    >
+      <ArrowLeft className="size-4" />
+      Back to home
+    </a>
 
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
-      {/* Mobile TOC Toggle */}
+    <header class="mt-6 border-b border-border pb-8">
+      <h1 class="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+        {pageTitle}
+      </h1>
+      <p class="mt-3 max-w-2xl text-muted-foreground">{description}</p>
+    </header>
+
+    {/* Mobile TOC */}
+    {
+      tocHeadings.length > 0 && (
+        <details
+          class="group mt-6 rounded-lg border border-border bg-card lg:hidden"
+          data-mobile-toc
+        >
+          <summary class="flex cursor-pointer list-none items-center justify-between gap-2 p-4 text-sm font-medium text-foreground [&::-webkit-details-marker]:hidden">
+            <span class="flex items-center gap-2">
+              <List className="size-4" />
+              On this page
+            </span>
+            <ChevronDown className="size-4 text-muted-foreground transition-transform group-open:rotate-180" />
+          </summary>
+          <nav class="max-h-[60vh] overflow-y-auto border-t border-border p-4">
+            <div class="space-y-1">
+              {tocHeadings.map((heading) => (
+                <a
+                  href={`#${heading.slug}`}
+                  class:list={[
+                    'block py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground',
+                    heading.depth === 3 && 'pl-4',
+                  ]}
+                  data-toc-link
+                  data-heading-id={heading.slug}
+                >
+                  <span class="line-clamp-2">{heading.text}</span>
+                </a>
+              ))}
+            </div>
+          </nav>
+        </details>
+      )
+    }
+
+    <div class="mt-8 grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_14rem] lg:gap-16">
+      {/* Main Content */}
+      <article class="min-w-0">
+        <div class="prose">
+          <slot />
+        </div>
+
+        {
+          lastUpdated && (
+            <p class="mt-12 border-t border-border pt-6 text-sm text-muted-foreground">
+              Last updated: {lastUpdated}
+            </p>
+          )
+        }
+      </article>
+
+      {/* Desktop TOC */}
       {
         tocHeadings.length > 0 && (
-          <div class="lg:hidden">
-            <button
-              type="button"
-              id="toc-toggle"
-              class="w-full flex items-center justify-between p-4 bg-card border border-border rounded-lg"
-              aria-expanded="false"
-              aria-controls="mobile-toc"
-            >
-              <span class="flex items-center gap-2 text-sm font-medium">
-                <Menu className="h-4 w-4" />
-                On This Page
-              </span>
-              <span id="toc-toggle-icon">
-                <svg
-                  class="h-4 w-4 text-muted-foreground"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </span>
-            </button>
-            <nav
-              id="mobile-toc"
-              class="hidden mt-2 bg-card border border-border rounded-lg p-4 max-h-[60vh] overflow-y-auto"
-            >
-              <div class="space-y-1">
+          <aside class="hidden lg:block">
+            <nav class="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
+              <p class="mb-3 text-sm font-medium text-foreground">On this page</p>
+              <div class="space-y-1 border-l border-border">
                 {tocHeadings.map((heading) => (
                   <a
                     href={`#${heading.slug}`}
                     class:list={[
-                      'block py-2 text-sm transition-colors duration-200 hover:text-foreground',
-                      heading.depth === 3
-                        ? 'pl-4 text-muted-foreground'
-                        : 'font-medium text-muted-foreground',
+                      '-ml-px block border-l-2 border-transparent py-1 pl-4 text-sm text-muted-foreground transition-colors hover:text-foreground',
+                      heading.depth === 3 && 'pl-8',
                     ]}
-                    data-toc-link-mobile
+                    data-toc-link
                     data-heading-id={heading.slug}
                   >
                     <span class="line-clamp-2">{heading.text}</span>
@@ -75,302 +106,73 @@ const tocHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3)
                 ))}
               </div>
             </nav>
-          </div>
-        )
-      }
-
-      {/* Table of Contents - Sidebar */}
-      {
-        tocHeadings.length > 0 && (
-          <aside class="lg:col-span-3 hidden lg:block">
-            <div class="sticky top-6">
-              <nav class="bg-card border border-border rounded-xl p-5 shadow-sm">
-                <h3 class="text-sm font-semibold text-foreground uppercase tracking-wide mb-4 flex items-center gap-2">
-                  <svg
-                    class="h-4 w-4 text-primary"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M4 6h16M4 12h16M4 18h7"
-                    />
-                  </svg>
-                  On This Page
-                </h3>
-                <div class="space-y-1" data-toc-container>
-                  {tocHeadings.map((heading) => (
-                    <a
-                      href={`#${heading.slug}`}
-                      class:list={[
-                        'block py-1.5 text-sm transition-all duration-200 hover:text-foreground rounded-md px-2 -mx-2 hover:bg-muted/50',
-                        heading.depth === 3
-                          ? 'pl-4 text-muted-foreground'
-                          : 'font-medium text-muted-foreground',
-                      ]}
-                      data-toc-link
-                      data-heading-id={heading.slug}
-                    >
-                      <span class="line-clamp-2">{heading.text}</span>
-                    </a>
-                  ))}
-                </div>
-              </nav>
-            </div>
           </aside>
         )
       }
-
-      {/* Main Content */}
-      <article
-        class:list={['min-w-0', tocHeadings.length > 0 ? 'lg:col-span-9' : 'lg:col-span-12']}
-      >
-        <div class="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
-          <div class="p-5 sm:p-8 lg:p-10">
-            <div
-              class="prose prose-sm sm:prose-base lg:prose-lg max-w-none dark:prose-invert prose-headings:scroll-mt-24"
-            >
-              <slot />
-            </div>
-
-            {
-              lastUpdated && (
-                <div class="mt-10 sm:mt-12 pt-5 sm:pt-6 border-t border-border">
-                  <p class="text-xs sm:text-sm text-muted-foreground flex items-center gap-2">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                    Last updated: {lastUpdated}
-                  </p>
-                </div>
-              )
-            }
-          </div>
-        </div>
-      </article>
     </div>
   </main>
 </Layout>
 
 <script>
-  // Mobile TOC Toggle
-  function initMobileTOC() {
-    const toggle = document.getElementById('toc-toggle')
-    const toc = document.getElementById('mobile-toc')
-    const icon = document.getElementById('toc-toggle-icon')
+  function initDocsTOC() {
+    const links = Array.from(document.querySelectorAll('[data-toc-link]'))
+    if (links.length === 0) return
 
-    if (!toggle || !toc) return
-
-    toggle.addEventListener('click', () => {
-      const isExpanded = toggle.getAttribute('aria-expanded') === 'true'
-      toggle.setAttribute('aria-expanded', String(!isExpanded))
-      toc.classList.toggle('hidden')
-
-      // Rotate icon
-      if (icon) {
-        icon.style.transform = isExpanded ? 'rotate(0deg)' : 'rotate(180deg)'
-      }
-    })
-
-    // Close mobile TOC when clicking a link
-    const mobileLinks = toc.querySelectorAll('[data-toc-link-mobile]')
-    mobileLinks.forEach((link) => {
-      link.addEventListener('click', () => {
-        toggle.setAttribute('aria-expanded', 'false')
-        toc.classList.add('hidden')
-        if (icon) {
-          icon.style.transform = 'rotate(0deg)'
-        }
-      })
-    })
-  }
-
-  // Highlight active section in TOC based on scroll position
-  function initTOCHighlight() {
-    const tocLinks = document.querySelectorAll('[data-toc-link]')
-    const mobileTocLinks = document.querySelectorAll('[data-toc-link-mobile]')
-    const allLinks = [...tocLinks, ...mobileTocLinks]
-
-    if (allLinks.length === 0) return
-
-    const headingElements = Array.from(allLinks)
-      .map((link) => {
+    // Smooth scroll with fixed-header offset, close mobile TOC after navigation
+    links.forEach((link) => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault()
         const id = link.getAttribute('data-heading-id')
-        return id ? document.getElementById(id) : null
+        const target = id ? document.getElementById(id) : null
+        if (!id || !target) return
+
+        const y = target.getBoundingClientRect().top + window.pageYOffset - 96
+        window.scrollTo({ top: y, behavior: 'smooth' })
+        history.pushState(null, '', `#${id}`)
+
+        const details = link.closest('details')
+        if (details) details.removeAttribute('open')
       })
+    })
+
+    // Highlight the active section while scrolling
+    const headingIds = [...new Set(links.map((l) => l.getAttribute('data-heading-id')))]
+    const headingElements = headingIds
+      .map((id) => (id ? document.getElementById(id) : null))
       .filter((el): el is HTMLElement => el !== null)
 
     if (headingElements.length === 0) return
 
-    // Set up intersection observer for heading visibility
-    const observerOptions = {
-      rootMargin: '-100px 0px -66%',
-      threshold: 0,
-    }
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        const id = entry.target.id
-        const links = document.querySelectorAll(`[data-heading-id="${id}"]`)
-
-        if (entry.isIntersecting) {
-          // Remove active state from all links
-          allLinks.forEach((l) => {
-            l.classList.remove('text-foreground', '!font-semibold', 'bg-primary/10')
-            l.classList.add('text-muted-foreground')
-          })
-
-          // Add active state to current link
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return
+          const id = entry.target.id
           links.forEach((link) => {
-            link.classList.remove('text-muted-foreground')
-            link.classList.add('text-foreground', '!font-semibold')
-            if (link.hasAttribute('data-toc-link')) {
-              link.classList.add('bg-primary/10')
-            }
+            const isActive = link.getAttribute('data-heading-id') === id
+            link.classList.toggle('text-foreground', isActive)
+            link.classList.toggle('font-medium', isActive)
+            link.classList.toggle('!border-primary', isActive)
+            link.classList.toggle('text-muted-foreground', !isActive)
           })
-        }
-      })
-    }, observerOptions)
+        })
+      },
+      { rootMargin: '-100px 0px -66%', threshold: 0 }
+    )
 
-    // Observe all heading elements
     headingElements.forEach((heading) => observer.observe(heading))
   }
 
-  // Smooth scroll for TOC links
-  function setupSmoothScroll() {
-    const tocLinks = document.querySelectorAll('[data-toc-link], [data-toc-link-mobile]')
-
-    tocLinks.forEach((link) => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault()
-        const id = link.getAttribute('data-heading-id')
-
-        if (id) {
-          const target = document.getElementById(id)
-          if (target) {
-            // Scroll with offset for fixed header
-            const yOffset = -100
-            const y = target.getBoundingClientRect().top + window.pageYOffset + yOffset
-            window.scrollTo({ top: y, behavior: 'smooth' })
-
-            // Update URL without jumping
-            history.pushState(null, '', `#${id}`)
-          }
-        }
-      })
-    })
-  }
-
-  // Initialize on page load
-  function initDocs() {
-    initMobileTOC()
-    initTOCHighlight()
-    setupSmoothScroll()
-  }
-
-  // Run on initial load
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initDocs)
+    document.addEventListener('DOMContentLoaded', initDocsTOC)
   } else {
-    initDocs()
+    initDocsTOC()
   }
 </script>
 
 <style>
-  /* Smooth scroll behavior */
-  html {
-    scroll-behavior: smooth;
-  }
-
-  /* Custom scrollbar for TOC */
-  [data-toc-container] {
-    max-height: calc(100vh - 200px);
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: hsl(var(--border)) transparent;
-  }
-
-  [data-toc-container]::-webkit-scrollbar {
-    width: 4px;
-  }
-
-  [data-toc-container]::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  [data-toc-container]::-webkit-scrollbar-thumb {
-    background: hsl(var(--border));
-    border-radius: 2px;
-  }
-
-  [data-toc-container]::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground));
-  }
-
-  /* Active indicator for TOC links */
-  [data-toc-link] {
-    position: relative;
-  }
-
-  [data-toc-link]::before {
-    content: '';
-    position: absolute;
-    left: -4px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 3px;
-    height: 0;
-    background: hsl(var(--primary));
-    transition: height 0.2s ease;
-    border-radius: 2px;
-  }
-
-  [data-toc-link].text-foreground::before {
-    height: 70%;
-  }
-
-  /* Mobile TOC styles */
-  #mobile-toc {
-    scrollbar-width: thin;
-    scrollbar-color: hsl(var(--border)) transparent;
-  }
-
-  #mobile-toc::-webkit-scrollbar {
-    width: 4px;
-  }
-
-  #mobile-toc::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  #mobile-toc::-webkit-scrollbar-thumb {
-    background: hsl(var(--border));
-    border-radius: 2px;
-  }
-
-  /* Prose improvements for mobile */
-  .prose pre {
-    max-width: 100%;
-    overflow-x: auto;
-  }
-
-  .prose table {
-    display: block;
-    max-width: 100%;
-    overflow-x: auto;
-    white-space: nowrap;
-  }
-
-  /* Ensure code blocks don't overflow */
-  .prose code {
-    word-break: break-word;
+  /* Offset anchor jumps below the fixed header */
+  .prose :where(h1, h2, h3, h4, h5, h6) {
+    scroll-margin-top: 6.5rem;
   }
 </style>

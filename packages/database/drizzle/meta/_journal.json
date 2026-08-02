@@ -15,6 +15,13 @@
       "when": 1759430627842,
       "tag": "0001_many_hairball",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1785650120597,
+      "tag": "0002_brainy_boomer",
+      "breakpoints": true
     }
   ]
 }

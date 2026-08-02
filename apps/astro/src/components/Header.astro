@@ -1,19 +1,40 @@
 ---
-import Star from './Star.astro'
+import { GitHubLogoIcon } from '@radix-ui/react-icons'
+import { getRuntimeBindings } from '@/lib/runtime'
+import { ModeToggle } from './ModeToggle'
 
-const Env = Astro.locals.runtime.env
+const env = getRuntimeBindings()
 ---
 
-<div
-  class="fixed top-0 z-20 h-20 w-full px-5 backdrop-blur-xl md:px-10 text-primary flex items-center justify-between first-letter:shadow-xs"
+<header
+  class="fixed inset-x-0 top-0 z-50 h-14 border-b border-border bg-background/80 backdrop-blur-md"
 >
-  <a href="/" class="font-bold flex items-center justify-center gap-3">
-    <span>{Env.SITE_NAME}</span>
-  </a>
-  <a href="/about" class="ml-auto text-sm md:text-base hidden md:block"> About </a>
-  <a href="/privacy" class="ml-3 md:ml-8 text-sm md:text-base hidden md:block"> Privacy </a>
-  <a href="/terms" class="ml-3 md:ml-8 text-sm md:text-base hidden md:block"> Terms </a>
-  <a class="ml-3 md:ml-8" target="_blank" href="https://github.com/MiraHikari/cloudflare-vmail">
-    <Star />
-  </a>
-</div>
+  <div class="mx-auto flex h-full max-w-7xl items-center gap-4 px-4 sm:px-6">
+    <a
+      href="/"
+      class="flex items-center gap-2 font-heading text-base font-semibold tracking-tight text-foreground"
+    >
+      <img src="/avatar.webp" alt="" class="size-6 rounded-full" />
+      {env.SITE_NAME}
+    </a>
+
+    <nav class="ml-auto flex items-center gap-1">
+      <a
+        href="/docs/api-docs"
+        class="rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+      >
+        Docs
+      </a>
+      <a
+        href="https://github.com/MiraHikari/cloudflare-vmail"
+        target="_blank"
+        rel="noreferrer"
+        aria-label="GitHub repository"
+        class="inline-flex size-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <GitHubLogoIcon className="size-4" />
+      </a>
+      <ModeToggle client:load />
+    </nav>
+  </div>
+</header>

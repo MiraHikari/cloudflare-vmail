@@ -1,0 +1,4 @@
+# Copy to .dev.vars for local Workerd development only.
+BATCH_ADMIN_TOKEN=local-admin-token-change-me-before-sharing
+JWT_SECRET=local-jwt-secret-with-at-least-thirty-two-bytes
+TURNSTILE_SECRET=1x0000000000000000000000000000000AA

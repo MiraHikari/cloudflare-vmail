@@ -1,9 +1,23 @@
+import type { LucideIcon } from 'lucide-react'
 import { format } from 'date-fns'
-import { Check, ChevronDown, ChevronUp, Copy, Database } from 'lucide-react'
-import { useState } from 'react'
-import { useToast } from '@/hooks/use-toast'
+import {
+  Calendar,
+  Check,
+  ChevronDown,
+  Copy,
+  Database,
+  Mail,
+  MessageSquare,
+  User,
+} from 'lucide-react'
+import { Fragment, useState } from 'react'
+import { toast } from 'sonner'
 import { copyToClipboard } from '@/lib/email-utils'
+import { cn } from '@/lib/utils'
+import { Badge } from './ui/badge'
 import { Button } from './ui/button'
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from './ui/card'
+import { Separator } from './ui/separator'
 
 interface Address {
   address: string
@@ -54,7 +68,6 @@ function formatAddress(addr: Address | undefined | null): string {
 export function EmailHeaders({ email }: EmailHeadersProps) {
   const [expandedSection, setExpandedSection] = useState<string | null>(null)
   const [copiedField, setCopiedField] = useState<string | null>(null)
-  const { toast } = useToast()
 
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? null : section)
@@ -66,12 +79,43 @@ export function EmailHeaders({ email }: EmailHeadersProps) {
     if (success) {
       setCopiedField(fieldName)
       setTimeout(() => setCopiedField(null), 2000)
-      toast({
-        title: 'Copied to clipboard',
+      toast('Copied to clipboard', {
         description: `${fieldName} copied successfully`,
       })
     }
   }
+
+  // Primary envelope metadata
+  const primaryRows: { label: string; icon: LucideIcon; value: string; copyable: boolean }[] = [
+    {
+      label: 'From',
+      icon: User,
+      value: formatAddress(email.from),
+      copyable: true,
+    },
+    {
+      label: 'To',
+      icon: Mail,
+      value: email.messageTo || 'Unknown',
+      copyable: true,
+    },
+    {
+      label: 'Subject',
+      icon: MessageSquare,
+      value: email.subject || '(No subject)',
+      copyable: true,
+    },
+    {
+      label: 'Date',
+      icon: Calendar,
+      value: email.date
+        ? format(new Date(email.date), 'PPpp')
+        : email.createdAt
+          ? format(new Date(email.createdAt), 'PPpp')
+          : 'Unknown',
+      copyable: false,
+    },
+  ]
 
   // Database Metadata
   const metadataHeaders: HeaderItem[] = [
@@ -118,184 +162,58 @@ export function EmailHeaders({ email }: EmailHeadersProps) {
   ]
 
   return (
-    <div className="space-y-4">
-      {/* Modern Card-based Primary Headers */}
-      <div className="bg-card rounded-lg border border-border shadow-sm overflow-hidden">
-        <div className="p-6 space-y-4">
-          {/* From Section */}
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <svg
-                className="w-6 h-6 text-primary"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                />
-              </svg>
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">
-                From
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="text-base font-semibold text-foreground break-all flex-1">
-                  {formatAddress(email.from)}
+    <Card>
+      <CardHeader>
+        <CardTitle>Message Details</CardTitle>
+        <CardAction className="flex items-center gap-1">
+          {email.priority && email.priority !== 'normal' && (
+            <Badge variant="outline">{email.priority}</Badge>
+          )}
+          <Badge variant={email.isRead ? 'secondary' : 'default'}>
+            {email.isRead ? 'Read' : 'Unread'}
+          </Badge>
+        </CardAction>
+      </CardHeader>
+
+      <CardContent className="space-y-3">
+        {primaryRows.map((row, index) => (
+          <Fragment key={row.label}>
+            {index > 0 && <Separator />}
+            <div className="flex items-start gap-3">
+              <row.icon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+              <div className="min-w-0 flex-1">
+                <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  {row.label}
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 flex-shrink-0 hover:bg-primary/10"
-                  onClick={() => handleCopy(formatAddress(email.from), 'From')}
-                  title="Copy sender address"
-                >
-                  {copiedField === 'From' ? (
-                    <Check className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
+                <div className="mt-1 flex items-start gap-1">
+                  <span className="min-w-0 flex-1 break-all text-sm font-medium text-foreground">
+                    {row.value}
+                  </span>
+                  {row.copyable && (
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      onClick={() => handleCopy(row.value, row.label)}
+                      title={`Copy ${row.label.toLowerCase()}`}
+                    >
+                      {copiedField === row.label ? <Check className="text-primary" /> : <Copy />}
+                    </Button>
                   )}
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          <div className="h-px bg-border" />
-
-          {/* To Section */}
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-              <svg
-                className="w-6 h-6 text-blue-600 dark:text-blue-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                />
-              </svg>
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">
-                To
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="text-base font-semibold text-foreground break-all flex-1">
-                  {email.messageTo || 'Unknown'}
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 flex-shrink-0 hover:bg-blue-500/10"
-                  onClick={() => handleCopy(email.messageTo || 'Unknown', 'To')}
-                  title="Copy recipient address"
-                >
-                  {copiedField === 'To' ? (
-                    <Check className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
-                  )}
-                </Button>
               </div>
             </div>
-          </div>
-
-          <div className="h-px bg-border" />
-
-          {/* Subject Section */}
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-              <svg
-                className="w-6 h-6 text-purple-600 dark:text-purple-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
-                />
-              </svg>
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">
-                Subject
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="text-base font-semibold text-foreground break-all flex-1">
-                  {email.subject || '(No subject)'}
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 flex-shrink-0 hover:bg-purple-500/10"
-                  onClick={() => handleCopy(email.subject || '(No subject)', 'Subject')}
-                  title="Copy subject"
-                >
-                  {copiedField === 'Subject' ? (
-                    <Check className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          <div className="h-px bg-border" />
-
-          {/* Date Section */}
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0">
-              <svg
-                className="w-6 h-6 text-green-600 dark:text-green-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">
-                Date
-              </div>
-              <div className="text-base font-medium text-foreground">
-                {email.date
-                  ? format(new Date(email.date), 'PPpp')
-                  : email.createdAt
-                    ? format(new Date(email.createdAt), 'PPpp')
-                    : 'Unknown'}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+          </Fragment>
+        ))}
+      </CardContent>
 
       {/* Advanced Options - Collapsible */}
-      <div className="bg-muted/20 rounded-lg border border-border overflow-hidden">
-        <CollapsibleSection
-          title="Advanced Information"
-          sectionId="metadata"
-          expanded={expandedSection === 'metadata'}
-          onToggle={() => toggleSection('metadata')}
-          icon={<Database className="h-4 w-4 text-muted-foreground" />}
-        >
+      <CollapsibleSection
+        title="Advanced Information"
+        expanded={expandedSection === 'metadata'}
+        onToggle={() => toggleSection('metadata')}
+        icon={<Database className="size-4 text-muted-foreground" />}
+      >
+        <div className="space-y-2.5">
           {metadataHeaders.map((header) => (
             <HeaderRow
               key={header.label}
@@ -306,38 +224,39 @@ export function EmailHeaders({ email }: EmailHeadersProps) {
               onCopy={() => handleCopy(header.value, header.label)}
             />
           ))}
-        </CollapsibleSection>
+        </div>
+      </CollapsibleSection>
 
-        {/* Raw Headers - Collapsible */}
-        {email.headers && email.headers.length > 0 && (
-          <CollapsibleSection
-            title={`Raw SMTP Headers (${email.headers.length})`}
-            sectionId="raw-headers"
-            expanded={expandedSection === 'raw-headers'}
-            onToggle={() => toggleSection('raw-headers')}
-          >
-            <div className="space-y-2 max-h-96 overflow-y-auto">
-              {email.headers.map((header, index) => (
-                <div key={index} className="text-xs font-mono">
-                  {Object.entries(header).map(([key, value]) => (
-                    <div key={key} className="grid grid-cols-[150px_1fr] gap-2 py-1">
-                      <div className="text-muted-foreground font-semibold truncate">{key}:</div>
-                      <div className="text-foreground break-all">{value}</div>
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
-          </CollapsibleSection>
-        )}
-      </div>
-    </div>
+      {/* Raw Headers - Collapsible */}
+      {email.headers && email.headers.length > 0 && (
+        <CollapsibleSection
+          title={`Raw SMTP Headers (${email.headers.length})`}
+          expanded={expandedSection === 'raw-headers'}
+          onToggle={() => toggleSection('raw-headers')}
+        >
+          <div className="max-h-80 space-y-1.5 overflow-y-auto font-mono text-xs">
+            {email.headers.map((header) => (
+              <div key={JSON.stringify(header)}>
+                {Object.entries(header).map(([key, value]) => (
+                  <div
+                    key={key}
+                    className="grid grid-cols-[7rem_1fr] gap-2 py-0.5 sm:grid-cols-[10rem_1fr]"
+                  >
+                    <div className="truncate font-medium text-muted-foreground">{key}:</div>
+                    <div className="break-all text-foreground">{value}</div>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </CollapsibleSection>
+      )}
+    </Card>
   )
 }
 
 interface CollapsibleSectionProps {
   title: string
-  sectionId: string
   expanded: boolean
   onToggle: () => void
   icon?: React.ReactNode
@@ -356,24 +275,22 @@ function CollapsibleSection({
       <button
         type="button"
         onClick={onToggle}
-        className="w-full px-4 py-3 flex items-center justify-between hover:bg-muted/50 transition-colors"
+        aria-expanded={expanded}
+        className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left transition-colors hover:bg-muted/50"
       >
-        <div className="flex items-center gap-2">
+        <span className="flex items-center gap-2 text-sm font-medium text-foreground">
           {icon}
-          <span className="text-sm font-medium text-foreground">{title}</span>
-        </div>
-        {expanded ? (
-          <ChevronUp className="h-4 w-4 text-muted-foreground" />
-        ) : (
-          <ChevronDown className="h-4 w-4 text-muted-foreground" />
-        )}
+          {title}
+        </span>
+        <ChevronDown
+          className={cn(
+            'size-4 shrink-0 text-muted-foreground transition-transform',
+            expanded && 'rotate-180'
+          )}
+        />
       </button>
 
-      {expanded && (
-        <div className="px-4 pb-4 space-y-3 border-t border-border bg-muted/20">
-          <div className="pt-3 space-y-3">{children}</div>
-        </div>
-      )}
+      {expanded && <div className="border-t border-border bg-muted/30 px-4 py-3">{children}</div>}
     </div>
   )
 }
@@ -388,21 +305,15 @@ interface HeaderRowProps {
 
 function HeaderRow({ label, value, copyable, copied, onCopy }: HeaderRowProps) {
   return (
-    <div className="grid grid-cols-[140px_1fr] gap-3 items-start">
-      <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+    <div className="grid grid-cols-[7rem_1fr] items-start gap-2">
+      <div className="pt-0.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
         {label}
       </div>
-      <div className="flex items-start gap-2 min-w-0">
-        <div className="text-sm text-foreground break-all flex-1 font-mono">{value}</div>
+      <div className="flex min-w-0 items-start gap-1">
+        <div className="min-w-0 flex-1 break-all font-mono text-xs text-foreground">{value}</div>
         {copyable && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6 flex-shrink-0"
-            onClick={onCopy}
-            title={`Copy ${label}`}
-          >
-            {copied ? <Check className="h-3 w-3 text-green-600" /> : <Copy className="h-3 w-3" />}
+          <Button variant="ghost" size="icon-xs" onClick={onCopy} title={`Copy ${label}`}>
+            {copied ? <Check className="text-primary" /> : <Copy />}
           </Button>
         )}
       </div>

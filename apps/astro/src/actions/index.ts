@@ -1,258 +1,230 @@
 import type { ActionAPIContext } from 'astro:actions'
+import type { MailboxSession } from '@/lib/session'
+import { z } from 'astro/zod'
 import { ActionError, defineAction } from 'astro:actions'
-import { z } from 'astro:schema'
 import * as DAO from 'database/dao'
 import { getCloudflareD1 } from 'database/db'
-import * as jose from 'jose'
-import { encodeJWTSecret, generateNewMailAddr, genToken } from '@/lib/utils'
+import { ApiError } from '@/lib/api'
+import { createMailboxSessionToken } from '@/lib/auth'
+import { publicLoginGuard } from '@/lib/login-guard'
+import { authorizeMailboxSession, generateMailboxAddress } from '@/lib/mailbox-api'
+import { getAvailableDomains, getRuntimeBindings } from '@/lib/runtime'
+import { readMailboxSession } from '@/lib/session'
 
-export interface MailboxSession {
-  mailbox: string
-  token: string
+export type { MailboxSession } from '@/lib/session'
+
+function actionError(
+  code: 'BAD_REQUEST' | 'UNAUTHORIZED' | 'NOT_FOUND' | 'TOO_MANY_REQUESTS',
+  message: string
+): never {
+  throw new ActionError({ code, message })
 }
 
-// Helper: Get and verify mailbox session
 async function getMailboxSession(ctx: ActionAPIContext): Promise<MailboxSession> {
-  const mailbox = ctx.cookies.get('mailbox')?.json() as MailboxSession
-  if (!mailbox) {
-    throw new ActionError({
-      code: 'NOT_FOUND',
-      message: 'mailbox not found',
-    })
+  const session = readMailboxSession(() => ctx.cookies.get('mailbox')?.json())
+
+  if (!session?.mailbox || !session.token) {
+    actionError('UNAUTHORIZED', 'Mailbox session required')
   }
 
-  await jose.jwtVerify(mailbox.token, encodeJWTSecret(ctx.locals.runtime.env.JWT_SECRET))
+  const env = getRuntimeBindings()
+  await authorizeMailboxSession(
+    getCloudflareD1(env.DB),
+    session.token,
+    session.mailbox,
+    env.JWT_SECRET
+  ).catch(() => actionError('UNAUTHORIZED', 'Invalid or expired mailbox session'))
 
-  return mailbox
+  return session
 }
 
-// Helper: Set mailbox session cookie
 function setMailboxSession(ctx: ActionAPIContext, session: MailboxSession) {
+  const env = getRuntimeBindings()
+  const configuredMaxAge = Number(env.COOKIE_EXPIRES_IN_SECONDS)
+  const maxAge =
+    Number.isSafeInteger(configuredMaxAge) && configuredMaxAge > 0 ? configuredMaxAge : 86400
+
   ctx.cookies.set('mailbox', session, {
     httpOnly: true,
-    maxAge: ctx.locals.runtime.env.COOKIE_EXPIRES_IN_SECONDS || 86400,
+    maxAge,
     path: '/',
+    sameSite: 'lax',
+    secure: new URL(ctx.request.url).protocol === 'https:',
   })
+}
+
+async function createSession(
+  ctx: ActionAPIContext,
+  mailbox: string,
+  credentialVersion: number | null = null
+) {
+  const token = await createMailboxSessionToken(
+    mailbox,
+    getRuntimeBindings().JWT_SECRET,
+    credentialVersion
+  )
+  setMailboxSession(ctx, { mailbox, token })
 }
 
 export const server = {
   getEmailsByMessageToWho: defineAction({
     handler: async (_, ctx) => {
-      const db = getCloudflareD1(ctx.locals.runtime.env.DB)
       const mailbox = await getMailboxSession(ctx)
-      return await DAO.getEmailsByMessageTo(db, mailbox.mailbox)
+      const { emails } = await DAO.getEmailsPageByMessageTo(
+        getCloudflareD1(getRuntimeBindings().DB),
+        mailbox.mailbox,
+        { limit: 100, offset: 0, unreadOnly: false }
+      )
+      return emails
     },
   }),
-  getMailboxOfEmail: defineAction({
-    input: z.object({
-      id: z.string(),
-    }),
-    handler: async (input, ctx) => {
-      const db = getCloudflareD1(ctx.locals.runtime.env.DB)
-      const result = await DAO.getMailboxOfEmail(db, input.id)
-      const mailbox = result?.messageTo
 
-      if (!mailbox) {
-        throw new ActionError({
-          code: 'NOT_FOUND',
-          message: 'mailbox not found',
-        })
-      }
-
-      const token = await genToken(mailbox, ctx.locals.runtime.env.JWT_SECRET)
-      setMailboxSession(ctx, { mailbox, token })
-
-      return mailbox
-    },
-  }),
   generateNewMailbox: defineAction({
     accept: 'form',
     input: z.object({
       'cf-turnstile-response': z.string(),
-      domain: z.string(),
+      domain: z.string().trim().toLowerCase(),
     }),
     handler: async (input, ctx) => {
-      const Env = ctx.locals.runtime.env
+      const env = getRuntimeBindings()
+      const domains = getAvailableDomains(env)
+      if (!domains.includes(input.domain)) {
+        actionError('BAD_REQUEST', 'Mailbox domain is not allowed')
+      }
 
-      // Check if we're in development mode
-      const isDev = Env.DEV_MODE === 'true'
-      const isTurnstileDisabled = isDev && Env.TURNSTILE_SECRET === 'dev-secret'
-
-      // Skip turnstile verification in dev mode
-      if (!isTurnstileDisabled) {
+      const isDev = env.DEV_MODE === 'true'
+      const skipTurnstile = isDev && env.TURNSTILE_SECRET === 'dev-secret'
+      if (!skipTurnstile) {
         const formData = new FormData()
-        formData.append('secret', Env.TURNSTILE_SECRET)
+        formData.append('secret', env.TURNSTILE_SECRET)
         formData.append('response', input['cf-turnstile-response'])
 
-        const result = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+        const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
           body: formData,
           method: 'POST',
         })
-
-        const outcome = z.object({ success: z.boolean() }).parse(await result.json())
-
-        if (!outcome.success) {
-          throw new ActionError({
-            code: 'UNAUTHORIZED',
-            message: 'complete the turnstile challenge',
-          })
+        if (!response.ok) {
+          throw new Error(`Turnstile verification failed with status ${response.status}`)
         }
+
+        const outcome = z.object({ success: z.boolean() }).parse(await response.json())
+        if (!outcome.success) actionError('UNAUTHORIZED', 'Complete the Turnstile challenge')
       }
 
-      const newMailbox = generateNewMailAddr(input.domain)
-      const token = await genToken(newMailbox, Env.JWT_SECRET)
-      setMailboxSession(ctx, { mailbox: newMailbox, token })
-
-      return newMailbox
+      const mailbox = generateMailboxAddress(input.domain)
+      await createSession(ctx, mailbox)
+      return mailbox
     },
   }),
+
   deleteAllEmailsByMessageTo: defineAction({
     handler: async (_, ctx) => {
-      const db = getCloudflareD1(ctx.locals.runtime.env.DB)
       const mailbox = await getMailboxSession(ctx)
-      return await DAO.deleteAllEmailsByMessageTo(db, mailbox.mailbox)
-    },
-  }),
-  // sendEmail: defineAction({
-  //   input: z.object({
-  //     to: z.string().email(),
-  //     subject: z.string(),
-  //     content: z.string(),
-  //     bcc: z.string().optional(),
-  //     cc: z.string().optional(),
-  //     name: z.string(),
-  //   }),
-  //   async handler(input, ctx) {
-  //     const Env = ctx.locals.runtime.env
-  //     const { mailbox, token } = ctx.cookies
-  //       .get('mailbox')
-  //       ?.json() as MailboxSession
-  //     if (!mailbox) {
-  //       throw new ActionError({
-  //         code: 'NOT_FOUND',
-  //         message: 'mailbox not found',
-  //       })
-  //     }
-
-  //     await jose.jwtVerify(token, encodeJWTSecret(Env.JWT_SECRET))
-
-  //     const sender = mailbox.split('@')
-  //     sender[1] = Env.MAILGUN_SEND_DOMAIN
-
-  //     const mailgun = new Mailgun(FormData)
-  //     const mailgunClient = mailgun.client({
-  //       username: 'api',
-  //       key: Env.MAILGUN_API_KEY,
-  //     })
-
-  //     await mailgunClient.messages.create(Env.MAILGUN_SEND_DOMAIN, {
-  //       from: `${input.name} <${sender.join('@')}>`,
-  //       to: input.to.split(','),
-  //       subject: input.subject,
-  //       html: input.content,
-  //       bcc: input.bcc,
-  //       cc: input.cc,
-  //     })
-  //   },
-  // }),
-  exit: defineAction({
-    handler: async (_, ctx) => {
-      ctx.cookies.set(
-        'mailbox',
-        {
-          mailbox: '',
-          token: '',
-        },
-        { maxAge: 1, path: '/' }
+      return DAO.deleteAllEmailsByMessageTo(
+        getCloudflareD1(getRuntimeBindings().DB),
+        mailbox.mailbox
       )
     },
   }),
 
-  // ============ Mailbox Claim & Auth ============
+  exit: defineAction({
+    handler: async (_, ctx) => {
+      ctx.cookies.delete('mailbox', { path: '/' })
+    },
+  }),
 
   isMailboxClaimed: defineAction({
-    input: z.object({
-      address: z.string().email(),
-    }),
+    input: z.object({ address: z.string().trim().toLowerCase().pipe(z.email()) }),
     handler: async (input, ctx) => {
-      const db = getCloudflareD1(ctx.locals.runtime.env.DB)
-      return await DAO.isMailboxClaimed(db, input.address)
+      const session = await getMailboxSession(ctx)
+      if (session.mailbox !== input.address) {
+        actionError('UNAUTHORIZED', 'Cannot inspect another mailbox')
+      }
+      return DAO.isMailboxClaimed(getCloudflareD1(getRuntimeBindings().DB), input.address)
     },
   }),
 
   claimMailbox: defineAction({
     input: z.object({
-      address: z.string().email(),
-      password: z.string().min(6),
-      expiresInDays: z.number().optional().default(30),
+      address: z.string().trim().toLowerCase().pipe(z.email()),
+      password: z.string().min(8).max(256),
     }),
     handler: async (input, ctx) => {
-      const db = getCloudflareD1(ctx.locals.runtime.env.DB)
-      const result = await DAO.claimMailbox(db, input.address, input.password, input.expiresInDays)
-
-      if (!result.success) {
-        throw new ActionError({
-          code: 'BAD_REQUEST',
-          message: result.error || 'Failed to claim mailbox',
-        })
+      const session = await getMailboxSession(ctx)
+      if (session.mailbox !== input.address) {
+        actionError('UNAUTHORIZED', 'Cannot claim another mailbox')
       }
 
-      const token = await genToken(input.address, ctx.locals.runtime.env.JWT_SECRET)
-      setMailboxSession(ctx, { mailbox: input.address, token })
+      const db = getCloudflareD1(getRuntimeBindings().DB)
+      const result = await DAO.claimMailbox(db, input.address, input.password, 30)
+      if (!result.success) actionError('BAD_REQUEST', result.error || 'Failed to claim mailbox')
 
+      const mailbox = await DAO.getMailbox(db, input.address)
+      if (!mailbox) throw new Error('Claimed mailbox was not persisted')
+      await createSession(ctx, input.address, mailbox.credentialVersion)
       return { success: true }
     },
   }),
 
   loginMailbox: defineAction({
     input: z.object({
-      address: z.string().email(),
-      password: z.string(),
+      address: z.string().trim().toLowerCase().pipe(z.email()),
+      password: z.string().min(1).max(256),
     }),
     handler: async (input, ctx) => {
-      const db = getCloudflareD1(ctx.locals.runtime.env.DB)
-      const result = await DAO.loginMailbox(db, input.address, input.password)
-
-      if (!result.success) {
-        throw new ActionError({
-          code: 'UNAUTHORIZED',
-          message: result.error || 'Login failed',
-        })
+      let result
+      try {
+        const verifyCredentials = () =>
+          DAO.loginMailbox(getCloudflareD1(getRuntimeBindings().DB), input.address, input.password)
+        result = await publicLoginGuard.run(ctx.request, input.address, verifyCredentials)
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 429) {
+          actionError('TOO_MANY_REQUESTS', error.message)
+        }
+        throw error
+      }
+      if (!result.success || !result.mailbox) {
+        actionError('UNAUTHORIZED', 'Invalid mailbox address or password')
       }
 
-      const token = await genToken(input.address, ctx.locals.runtime.env.JWT_SECRET)
-      setMailboxSession(ctx, { mailbox: input.address, token })
-
-      return { success: true, mailbox: result.mailbox }
+      await createSession(ctx, result.mailbox.address, result.mailbox.credentialVersion)
+      return {
+        success: true,
+        mailbox: {
+          address: result.mailbox.address,
+          createdAt: result.mailbox.createdAt,
+          expiresAt: result.mailbox.expiresAt,
+          lastLoginAt: result.mailbox.lastLoginAt,
+        },
+      }
     },
   }),
 
-  // ============ Email Read Status ============
-
   markEmailAsRead: defineAction({
-    input: z.object({
-      id: z.string(),
-    }),
+    input: z.object({ id: z.string().min(1).max(128) }),
     handler: async (input, ctx) => {
-      const db = getCloudflareD1(ctx.locals.runtime.env.DB)
-      await getMailboxSession(ctx) // Verify session
-      return await DAO.markEmailAsRead(db, input.id)
+      const mailbox = await getMailboxSession(ctx)
+      const updated = await DAO.markEmailAsRead(
+        getCloudflareD1(getRuntimeBindings().DB),
+        input.id,
+        mailbox.mailbox
+      )
+      if (!updated) actionError('NOT_FOUND', 'Email not found')
+      return { success: true }
     },
   }),
 
   markAllAsRead: defineAction({
     handler: async (_, ctx) => {
-      const db = getCloudflareD1(ctx.locals.runtime.env.DB)
       const mailbox = await getMailboxSession(ctx)
-      return await DAO.markAllAsRead(db, mailbox.mailbox)
+      return DAO.markAllAsRead(getCloudflareD1(getRuntimeBindings().DB), mailbox.mailbox)
     },
   }),
 
   getMailboxStats: defineAction({
     handler: async (_, ctx) => {
-      const db = getCloudflareD1(ctx.locals.runtime.env.DB)
       const mailbox = await getMailboxSession(ctx)
-      return await DAO.getMailboxStats(db, mailbox.mailbox)
+      return DAO.getMailboxStats(getCloudflareD1(getRuntimeBindings().DB), mailbox.mailbox)
     },
   }),
 }

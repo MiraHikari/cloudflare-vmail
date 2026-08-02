@@ -7,7 +7,8 @@
     "paths": {
       "@/*": ["./src/*"],
       "database": ["../../packages/database"]
-    }
+    },
+    "types": ["@cloudflare/workers-types"]
   },
   "references": [{ "path": "../../packages/database" }],
   "include": [".astro/types.d.ts", "**/*"],

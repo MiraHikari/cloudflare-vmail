@@ -15,6 +15,7 @@ pnpm-debug.log*
 
 # environment variables
 .env
+.env.development
 .env.production
 
 # macOS-specific files
@@ -27,6 +28,5 @@ pnpm-debug.log*
 .wrangler
 .dev.vars
 
-# ignore wranger config
-wrangler.toml
 worker-configuration.d.ts
+dist-deploy/

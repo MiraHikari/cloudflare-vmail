@@ -1,15 +1,19 @@
 ---
 import { Turnstile } from '@marsidev/react-turnstile'
 import { actions, isInputError } from 'astro:actions'
+import { Info } from 'lucide-react'
 import { SelectDomain } from '@/components/SelectDomain'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import PasswordDrawer from './PasswordDrawer'
+import { Field, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui/field'
+import { Spinner } from '@/components/ui/spinner'
+import { getAvailableDomains, getRuntimeBindings } from '@/lib/runtime'
 
-const Env = Astro.locals.runtime.env
+const env = getRuntimeBindings()
 
 const result = Astro.getActionResult(actions.generateNewMailbox)
-const turnstileSiteKey = Env.TURNSTILE_SITE_KEY
-const mailDomains = Env.MAIL_DOMAIN.split(',')
+const turnstileSiteKey = env.TURNSTILE_SITE_KEY
+const mailDomains = getAvailableDomains(env)
 
 // Check for action errors
 const hasError = result && !result.data && result.error
@@ -20,107 +24,65 @@ const errorMessage = hasError
   : null
 
 // Check if we're in development mode
-const isDev = import.meta.env.DEV || Env.DEV_MODE === 'true'
-const isTurnstileEnabled = !isDev || Env.TURNSTILE_SECRET !== 'dev-secret'
+const isDev = import.meta.env.DEV || env.DEV_MODE === 'true'
+const isTurnstileEnabled = !isDev || env.TURNSTILE_SECRET !== 'dev-secret'
 ---
 
-<div class="space-y-6">
-  <form action={actions.generateNewMailbox} method="POST" class="space-y-4" data-mailbox-form>
-    <div class="space-y-2">
-      <label class="text-sm font-medium text-card-foreground">Select Domain</label>
+<form action={actions.generateNewMailbox} method="POST" data-mailbox-form>
+  <FieldGroup>
+    <Field>
+      <FieldLabel>Domain</FieldLabel>
       {mailDomains.length > 0 && <SelectDomain domains={mailDomains} client:load />}
-    </div>
+      <FieldDescription>Pick a domain for your new mailbox address.</FieldDescription>
+    </Field>
+
+    <Field>
+      <FieldLabel>Bot Check</FieldLabel>
+      {
+        isTurnstileEnabled ? (
+          <>
+            <div class="h-[65px] overflow-hidden border border-border bg-muted/30 [&_iframe]:w-full!">
+              <Turnstile siteKey={turnstileSiteKey} client:only="react" />
+            </div>
+            <FieldDescription>Complete the verification to create your mailbox.</FieldDescription>
+          </>
+        ) : (
+          <>
+            <Alert>
+              <Info />
+              <AlertDescription className="col-start-2">
+                Turnstile is disabled in development mode.
+              </AlertDescription>
+            </Alert>
+            <input type="hidden" name="cf-turnstile-response" value="dev-mode-bypass" />
+          </>
+        )
+      }
+    </Field>
 
     {
-      isTurnstileEnabled ? (
-        <div class="space-y-2">
-          <label class="text-sm font-medium text-card-foreground">Bot Check</label>
-          <div class="[&_iframe]:w-full! h-[65px] rounded-lg overflow-hidden border border-border bg-muted/30">
-            <Turnstile siteKey={turnstileSiteKey} client:only="react" />
-          </div>
-          <p class="text-xs text-muted-foreground">
-            Please complete the verification to create your mailbox
-          </p>
-        </div>
-      ) : (
-        <div class="space-y-2">
-          <label class="text-sm font-medium text-card-foreground">Bot Check</label>
-          <div class="p-3 rounded-lg border border-dashed border-amber-300 bg-amber-50/50 dark:bg-amber-950/20">
-            <p class="text-xs text-amber-700 dark:text-amber-300 flex items-center gap-2">
-              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              Turnstile disabled in development mode
-            </p>
-          </div>
-          <input type="hidden" name="cf-turnstile-response" value="dev-mode-bypass" />
-        </div>
+      errorMessage && (
+        <Alert variant="destructive">
+          <AlertTitle>{errorMessage}</AlertTitle>
+          <AlertDescription>Please try again or refresh the page.</AlertDescription>
+        </Alert>
       )
     }
 
-    <Button type="submit" variant="default" className="w-full h-10" data-submit-btn>
+    <Button type="submit" className="w-full" data-submit-btn>
       <span class="btn-text">Create New Mailbox</span>
       <span class="btn-loading hidden items-center gap-2">
-        <svg
-          class="animate-spin h-4 w-4"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
-          ></circle>
-          <path
-            class="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-          ></path>
-        </svg>
+        <Spinner />
         Creating...
       </span>
     </Button>
-  </form>
-
-  {/* Error Display */}
-  {
-    errorMessage && (
-      <div class="rounded-lg border border-destructive/50 bg-destructive/10 p-4 animate-in fade-in slide-in-from-top-2">
-        <div class="flex items-start gap-3">
-          <svg
-            class="h-5 w-5 text-destructive shrink-0 mt-0.5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <div class="flex-1">
-            <p class="text-sm font-medium text-destructive">{errorMessage}</p>
-            <p class="text-xs text-destructive/80 mt-1">Please try again or refresh the page.</p>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  <div class="pt-2">
-    <PasswordDrawer client:load />
-  </div>
-</div>
+  </FieldGroup>
+</form>
 
 <script>
   // Handle form submission loading state
   const form = document.querySelector('[data-mailbox-form]')
-  const submitBtn = document.querySelector('[data-submit-btn]')
+  const submitBtn = document.querySelector<HTMLButtonElement>('[data-submit-btn]')
   const btnText = submitBtn?.querySelector('.btn-text')
   const btnLoading = submitBtn?.querySelector('.btn-loading')
 

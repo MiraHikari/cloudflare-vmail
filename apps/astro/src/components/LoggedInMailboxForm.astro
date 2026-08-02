@@ -1,11 +1,13 @@
 ---
-import type { MailboxSession } from '@/actions'
-import * as jose from 'jose'
-import { encodeJWTSecret } from '@/lib/utils'
+import { getCloudflareD1 } from 'database/db'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Field, FieldLabel } from '@/components/ui/field'
+import { authorizeMailboxSession } from '@/lib/mailbox-api'
+import { getRuntimeBindings } from '@/lib/runtime'
+import { readMailboxSession } from '@/lib/session'
 import CopyButton from './CopyButton'
 import DeleteEveryThingButton from './DeleteEveryThingButton'
 import ExitButton from './ExitButton'
-import SenderButton from './SendEmailButton'
 
 interface Props {
   hasMails?: boolean
@@ -13,48 +15,53 @@ interface Props {
 
 const { hasMails } = Astro.props
 
-const savedMailbox = Astro.cookies.get('mailbox')?.json() as MailboxSession
+const savedMailbox = readMailboxSession(() => Astro.cookies.get('mailbox')?.json())
+const env = getRuntimeBindings()
 
-const verified = await jose
-  .jwtVerify(savedMailbox.token, encodeJWTSecret(String(Astro.locals.runtime.env.JWT_SECRET)))
-  .then(() => true)
-  .catch(() => false)
+const verified = savedMailbox
+  ? await authorizeMailboxSession(
+      getCloudflareD1(env.DB),
+      savedMailbox.token,
+      savedMailbox.mailbox,
+      env.JWT_SECRET
+    )
+      .then(() => true)
+      .catch(() => false)
+  : false
 ---
 
-<div class="space-y-4">
+<div class="flex flex-col gap-4">
   {
-    verified && (
-      <div class="space-y-3">
-        <label class="text-sm font-medium text-card-foreground">Your Email Address</label>
-        <div class="flex items-center gap-2 p-3 bg-muted rounded-md border border-border">
-          <span class="flex-1 truncate text-sm font-mono text-muted-foreground">
+    verified && savedMailbox && (
+      <Field>
+        <FieldLabel>Your Email Address</FieldLabel>
+        <div class="flex h-9 items-center gap-2 border border-input bg-muted/50 px-2.5">
+          <span class="flex-1 truncate font-mono text-xs text-muted-foreground">
             {savedMailbox.mailbox}
           </span>
           <CopyButton
             client:load
             content={savedMailbox.mailbox}
-            className="p-1.5 rounded-md hover:bg-background transition-colors"
+            className="p-1 transition-colors hover:bg-background"
           />
         </div>
-      </div>
+      </Field>
     )
   }
 
   {
     !verified && (
-      <div class="rounded-md border border-destructive/50 bg-destructive/10 p-4">
-        <div class="text-sm text-destructive">
-          <strong>Verification Failed:</strong> Your mailbox token may be expired or invalid.
-        </div>
-      </div>
+      <Alert variant="destructive">
+        <AlertTitle>Verification Failed</AlertTitle>
+        <AlertDescription>
+          Your mailbox token may be expired or invalid. Please log in again.
+        </AlertDescription>
+      </Alert>
     )
   }
 
-  <div class="space-y-2">
+  <div class="flex flex-col gap-2">
     <ExitButton client:only="react" />
-    <div class="grid grid-cols-2 gap-2">
-      <SenderButton client:only="react" />
-      <DeleteEveryThingButton isDisabled={!hasMails} client:only="react" />
-    </div>
+    <DeleteEveryThingButton isDisabled={!hasMails} client:only="react" />
   </div>
 </div>

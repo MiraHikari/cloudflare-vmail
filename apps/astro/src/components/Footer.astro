@@ -1,35 +1,30 @@
 ---
-import { GitHubLogoIcon } from '@radix-ui/react-icons'
-import { ModeToggle } from './ModeToggle'
-import { Button } from './ui/button'
+import { getRuntimeBindings } from '@/lib/runtime'
 
-const Env = Astro.locals.runtime.env
+const env = getRuntimeBindings()
+const year = new Date().getFullYear()
 ---
 
-<div
-  class="text-primary w-full mt-auto flex flex-col items-center justify-between px-5 pt-16 mb-10 md:px-10 mx-auto sm:flex-row"
->
-  <a href="/" class="text-xl font-black leading-none select-none logo">
-    {Env.SITE_NAME}
-  </a>
-  <p
-    class="mt-4 text-sm text-secondary-foreground sm:ml-4 sm:pl-4 sm:border-l sm:border-border sm:mt-0"
+<footer class="border-t border-border">
+  <div
+    class="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 py-8 text-sm text-muted-foreground sm:flex-row sm:justify-between sm:px-6"
   >
-    © 2023-2024 Products of{' '}
-    <a
-      class="font-semibold underline hover:text-primary"
-      href="https://www.gcxstudio.cn"
-      target="_blank"
-    >
-      MiraHikari
-    </a>
-  </p>
-  <section
-    class="inline-flex justify-center mt-4 space-x-5 sm:ml-auto sm:mt-0 sm:justify-start text-secondary-foreground underline hover:text-primary"
-  >
-    <ModeToggle client:load />
-    <Button variant="outline" size="icon">
-      <a href="https://github.com/MiraHikari"><GitHubLogoIcon /></a>
-    </Button>
-  </section>
-</div>
+    <p>
+      © 2023-{year}
+      {env.SITE_NAME} · Built by{' '}
+      <a
+        href="https://www.gcxstudio.cn"
+        target="_blank"
+        rel="noreferrer"
+        class="font-medium text-foreground underline-offset-4 hover:underline"
+      >
+        MiraHikari
+      </a>
+    </p>
+    <nav class="flex items-center gap-4">
+      <a href="/docs/api-docs" class="transition-colors hover:text-foreground">Docs</a>
+      <a href="/docs/privacy" class="transition-colors hover:text-foreground">Privacy</a>
+      <a href="/docs/terms" class="transition-colors hover:text-foreground">Terms</a>
+    </nav>
+  </div>
+</footer>

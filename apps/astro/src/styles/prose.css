@@ -1,0 +1,129 @@
+/* Typography – Prose styles */
+@layer base {
+  .prose {
+    color: var(--color-foreground);
+    max-width: 65ch;
+  }
+
+  .prose h1,
+  .prose h2,
+  .prose h3,
+  .prose h4,
+  .prose h5,
+  .prose h6 {
+    color: var(--color-foreground);
+    line-height: 1.25;
+    font-weight: 700;
+    margin-top: 1.5em;
+    margin-bottom: 0.75em;
+  }
+
+  .prose h1 {
+    font-size: 2rem;
+  }
+  .prose h2 {
+    font-size: 1.5rem;
+  }
+  .prose h3 {
+    font-size: 1.25rem;
+  }
+  .prose h4 {
+    font-size: 1.125rem;
+  }
+
+  .prose p {
+    margin: 1em 0;
+    color: var(--color-muted-foreground);
+  }
+
+  .prose a {
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .prose a:hover {
+    opacity: 0.85;
+  }
+
+  .prose strong {
+    color: var(--color-foreground);
+    font-weight: 700;
+  }
+  .prose em {
+    font-style: italic;
+  }
+
+  .prose code {
+    background-color: var(--color-muted);
+    color: var(--color-foreground);
+    padding: 0.15em 0.35em;
+    border-radius: var(--radius-sm);
+    font-size: 0.95em;
+  }
+
+  .prose pre {
+    background-color: var(--color-muted);
+    color: var(--color-foreground);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+    line-height: 1.5;
+    margin: 1.25em 0;
+  }
+  .prose pre code {
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+  }
+
+  .prose blockquote {
+    color: var(--color-muted-foreground);
+    border-left: 3px solid var(--color-border);
+    padding-left: 1rem;
+    margin: 1.25em 0;
+    font-style: italic;
+  }
+
+  .prose ul {
+    list-style: disc inside;
+    margin: 0.75em 0;
+    padding-left: 1rem;
+  }
+  .prose ol {
+    list-style: decimal inside;
+    margin: 0.75em 0;
+    padding-left: 1rem;
+  }
+  .prose li {
+    margin: 0.35em 0;
+  }
+
+  .prose hr {
+    border: 0;
+    border-top: 1px solid var(--color-border);
+    margin: 2em 0;
+  }
+
+  .prose img,
+  .prose video,
+  .prose figure {
+    margin: 1.25em 0;
+    border-radius: var(--radius-md);
+  }
+
+  .prose table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.25em 0;
+  }
+  .prose th,
+  .prose td {
+    border: 1px solid var(--color-border);
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+  }
+  .prose thead th {
+    background-color: var(--color-muted);
+    color: var(--color-foreground);
+  }
+}

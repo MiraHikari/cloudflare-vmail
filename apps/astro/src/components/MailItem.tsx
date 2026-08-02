@@ -1,12 +1,11 @@
-import type { Email } from 'database/schema'
+import type { EmailSummary } from 'database/dao'
 import { actions } from 'astro:actions'
 import { formatDistanceToNow } from 'date-fns'
-import { Circle } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { cn } from '@/lib/utils'
 
 interface MailItemProps {
-  mail: Email
+  mail: EmailSummary
 }
 
 export default function MailItem({ mail: item }: MailItemProps) {
@@ -55,70 +54,43 @@ export default function MailItem({ mail: item }: MailItemProps) {
       href={`/mails/${item.id}`}
       onClick={handleClick}
       className={cn(
-        'group block p-4 rounded-xl border transition-all duration-200',
-        'hover:shadow-sm hover:-translate-y-0.5',
-        isRead
-          ? 'bg-card border-border/50 hover:bg-muted/30'
-          : 'bg-primary/[0.03] border-primary/20 hover:bg-primary/[0.06]'
+        'group flex items-start gap-3 bg-card p-3 ring-1 ring-foreground/10 transition-colors',
+        'hover:bg-muted/50',
+        !isRead && 'bg-primary/[0.04] ring-primary/20 hover:bg-primary/[0.08]'
       )}
     >
-      <div className="flex items-start gap-3">
-        {/* Unread indicator */}
-        <div className="mt-2 flex-shrink-0">
-          {isRead ? (
-            <div className="w-2 h-2 rounded-full bg-muted-foreground/30" />
-          ) : (
-            <div className="relative">
-              <Circle className="h-2 w-2 fill-primary text-primary" />
-              <span className="absolute inset-0 animate-ping rounded-full bg-primary/30" />
-            </div>
+      {/* Avatar */}
+      <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+        {senderInitial}
+      </div>
+
+      <div className="min-w-0 flex-1 space-y-1">
+        {/* Header row */}
+        <div className="flex items-center justify-between gap-3">
+          <span
+            className={cn(
+              'truncate text-xs',
+              isRead ? 'font-medium text-foreground' : 'font-semibold text-foreground'
+            )}
+          >
+            {senderName}
+          </span>
+          <span className="flex shrink-0 items-center gap-2">
+            {!isRead && <span className="size-2 rounded-full bg-primary" aria-label="Unread" />}
+            <time className="text-xs text-muted-foreground tabular-nums">{formattedDate}</time>
+          </span>
+        </div>
+
+        {/* Content */}
+        <h4
+          className={cn(
+            'line-clamp-1 text-xs',
+            isRead ? 'font-normal text-foreground' : 'font-medium text-foreground'
           )}
-        </div>
-
-        <div className="flex-1 min-w-0 space-y-2">
-          {/* Header row */}
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5 min-w-0">
-              {/* Avatar */}
-              <div
-                className={cn(
-                  'w-9 h-9 rounded-full flex items-center justify-center shrink-0',
-                  'bg-gradient-to-br from-primary/20 to-primary/5 text-primary font-medium text-sm'
-                )}
-              >
-                {senderInitial}
-              </div>
-              {/* Sender name */}
-              <div
-                className={cn(
-                  'text-sm truncate',
-                  isRead ? 'font-medium text-foreground' : 'font-semibold text-foreground'
-                )}
-              >
-                {senderName}
-              </div>
-            </div>
-            {/* Date */}
-            <time className="text-xs text-muted-foreground shrink-0 tabular-nums">
-              {formattedDate}
-            </time>
-          </div>
-
-          {/* Content */}
-          <div className="space-y-1 pl-11">
-            <h4
-              className={cn(
-                'text-sm line-clamp-1',
-                isRead ? 'font-medium text-foreground' : 'font-semibold text-foreground'
-              )}
-            >
-              {item.subject || 'No subject'}
-            </h4>
-            <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-              {previewText}
-            </p>
-          </div>
-        </div>
+        >
+          {item.subject || 'No subject'}
+        </h4>
+        <p className="line-clamp-2 text-xs leading-relaxed text-muted-foreground">{previewText}</p>
       </div>
     </a>
   )

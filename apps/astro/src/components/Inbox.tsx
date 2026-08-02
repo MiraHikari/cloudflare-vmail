@@ -1,15 +1,25 @@
-import type { Email } from 'database/schema'
+import type { EmailSummary } from 'database/dao'
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
 import { actions } from 'astro:actions'
-import { CheckCheck, Mail, RefreshCw, Search, Sparkles, X, InboxIcon } from 'lucide-react'
+import { AlertCircle, CheckCheck, Mail, RefreshCw, Search, X } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 import { ClaimMailboxDialog } from './ClaimMailboxDialog'
 import { MailboxStats } from './MailboxStats'
 import MailItem from './MailItem'
+import { Alert, AlertDescription, AlertTitle } from './ui/alert'
+import { Badge } from './ui/badge'
 import { Button } from './ui/button'
-import { Input } from './ui/input'
-import { ErrorState, SkeletonList } from './ui/loading-state'
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from './ui/empty'
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from './ui/input-group'
+import { Skeleton } from './ui/skeleton'
 
 // Create a singleton query client for better caching
 const queryClient = new QueryClient({
@@ -23,13 +33,33 @@ const queryClient = new QueryClient({
 })
 
 interface InboxProps {
-  mails: Email[]
+  mails: EmailSummary[]
   mailboxAddress: string
   isClaimed: boolean
 }
 
+function MailListSkeleton({ count = 3 }: { count?: number }) {
+  const itemKeys = Array.from({ length: count }, (_, index) => `skeleton-${index + 1}`)
+  return (
+    <div className="space-y-2">
+      {itemKeys.map((key) => (
+        <div key={key} className="flex items-start gap-3 bg-card p-3 ring-1 ring-foreground/10">
+          <Skeleton className="size-9 shrink-0 rounded-full" />
+          <div className="flex-1 space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <Skeleton className="h-3.5 w-32" />
+              <Skeleton className="h-3 w-16" />
+            </div>
+            <Skeleton className="h-3.5 w-2/3" />
+            <Skeleton className="h-3 w-full" />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export function Inbox({ mails, mailboxAddress, isClaimed }: InboxProps) {
-  const { toast } = useToast()
   const [isMarkingAllRead, setIsMarkingAllRead] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const previousEmailCount = useRef(mails.length)
@@ -66,31 +96,27 @@ export function Inbox({ mails, mailboxAddress, isClaimed }: InboxProps) {
       // Show toast for new emails
       if (newEmailsCount === 1 && newEmails[0]) {
         const email = newEmails[0]
-        toast({
-          title: '📬 New email received',
+        toast('📬 New email received', {
           description: `From: ${email.from?.name || email.from?.address || 'Unknown'}`,
         })
       } else if (newEmailsCount > 1) {
-        toast({
-          title: `📬 ${newEmailsCount} new emails received`,
+        toast(`📬 ${newEmailsCount} new emails received`, {
           description: 'Check your inbox',
         })
       }
     }
 
     previousEmailCount.current = emails.length
-  }, [emails, toast])
+  }, [emails])
 
   // Handle query errors
   useEffect(() => {
     if (queryError) {
-      toast({
-        title: 'Failed to refresh emails',
+      toast.error('Failed to refresh emails', {
         description: queryError instanceof Error ? queryError.message : 'Please try again later',
-        variant: 'destructive',
       })
     }
-  }, [queryError, toast])
+  }, [queryError])
 
   // Keyboard shortcut: Ctrl/Cmd + K to focus search
   useEffect(() => {
@@ -126,20 +152,17 @@ export function Inbox({ mails, mailboxAddress, isClaimed }: InboxProps) {
         queryKey: ['emails', mailboxAddress],
       })
 
-      toast({
-        title: 'All emails marked as read',
+      toast('All emails marked as read', {
         description: `${emails.length} ${emails.length === 1 ? 'email' : 'emails'} marked as read`,
       })
     } catch {
-      toast({
-        title: 'Failed to mark all as read',
+      toast.error('Failed to mark all as read', {
         description: 'Please try again',
-        variant: 'destructive',
       })
     } finally {
       setIsMarkingAllRead(false)
     }
-  }, [emails.length, mailboxAddress, toast])
+  }, [emails.length, mailboxAddress])
 
   // Filter emails based on search term
   const filteredEmails = useMemo(() => {
@@ -168,67 +191,37 @@ export function Inbox({ mails, mailboxAddress, isClaimed }: InboxProps) {
   // Show error state if query failed and we have no data
   if (queryError && emails.length === 0) {
     return (
-      <ErrorState
-        title="Failed to load emails"
-        message={queryError instanceof Error ? queryError.message : 'Please try again later'}
-        onRetry={refetch}
-      />
+      <Alert variant="destructive">
+        <AlertCircle />
+        <AlertTitle>Failed to load emails</AlertTitle>
+        <AlertDescription className="flex flex-col items-start gap-2">
+          <p>{queryError instanceof Error ? queryError.message : 'Please try again later'}</p>
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
+            <RefreshCw />
+            Try again
+          </Button>
+        </AlertDescription>
+      </Alert>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Stats Panel */}
       {emails.length > 0 && <MailboxStats />}
 
-      {/* Search Bar */}
-      {emails.length > 0 && (
-        <div className="relative group">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
-          <Input
-            ref={searchInputRef}
-            placeholder="Search emails (Ctrl+K)..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 pr-20 transition-all focus-visible:ring-primary"
-          />
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-            {searchTerm ? (
-              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleClearSearch}>
-                <X className="h-3 w-3" />
-              </Button>
-            ) : (
-              <kbd className="hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-                <span className="text-xs">⌘</span>K
-              </kbd>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 ring-1 ring-primary/10">
-              <InboxIcon className="h-5 w-5 text-primary" />
-            </div>
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
-            )}
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold tracking-tight">Inbox</h2>
-            {emails.length > 0 && (
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {searchTerm
-                  ? `${filteredEmails.length} of ${emails.length} emails`
-                  : `${emails.length} ${emails.length === 1 ? 'email' : 'emails'}`}
-              </p>
-            )}
-          </div>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <h2 className="font-heading text-base font-medium">Inbox</h2>
+          {unreadCount > 0 && <Badge>{unreadCount} unread</Badge>}
+          {emails.length > 0 && unreadCount === 0 && (
+            <span className="text-xs text-muted-foreground">
+              {searchTerm
+                ? `${filteredEmails.length} of ${emails.length} emails`
+                : `${emails.length} ${emails.length === 1 ? 'email' : 'emails'}`}
+            </span>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
@@ -239,93 +232,92 @@ export function Inbox({ mails, mailboxAddress, isClaimed }: InboxProps) {
               size="sm"
               onClick={handleMarkAllAsRead}
               disabled={isMarkingAllRead}
-              className="h-9"
             >
-              <CheckCheck className={`h-4 w-4 mr-2 ${isMarkingAllRead ? 'animate-pulse' : ''}`} />
+              <CheckCheck className={isMarkingAllRead ? 'animate-pulse' : undefined} />
               Mark all read
             </Button>
           )}
           <Button
             variant="outline"
-            size="sm"
+            size="icon-sm"
             onClick={handleRefresh}
             disabled={isFetching}
-            className="h-9 px-2.5"
             title="Refresh emails"
           >
-            <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+            <RefreshCw className={isFetching ? 'animate-spin' : undefined} />
+            <span className="sr-only">Refresh emails</span>
           </Button>
         </div>
       </div>
 
+      {/* Search Bar */}
+      {emails.length > 0 && (
+        <InputGroup>
+          <InputGroupAddon>
+            <Search />
+          </InputGroupAddon>
+          <InputGroupInput
+            ref={searchInputRef}
+            placeholder="Search emails..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <InputGroupAddon align="inline-end">
+            {searchTerm ? (
+              <InputGroupButton onClick={handleClearSearch} aria-label="Clear search">
+                <X />
+              </InputGroupButton>
+            ) : (
+              <kbd className="hidden select-none items-center gap-1 border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground sm:inline-flex">
+                <span className="text-xs">⌘</span>K
+              </kbd>
+            )}
+          </InputGroupAddon>
+        </InputGroup>
+      )}
+
       {/* Loading State */}
-      {isLoading && emails.length === 0 && <SkeletonList count={3} />}
+      {isLoading && emails.length === 0 && <MailListSkeleton count={3} />}
 
       {/* Email List */}
       {!isLoading && emails.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-          <div className="relative mb-6">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center ring-1 ring-border">
-              <Mail className="h-12 w-12 text-muted-foreground/60" />
-            </div>
-            <div className="absolute -top-2 -right-2">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center animate-pulse">
-                <Sparkles className="h-4 w-4 text-primary" />
-              </div>
-            </div>
-          </div>
-
-          <h3 className="text-lg font-semibold mb-2">Waiting for emails...</h3>
-          <p className="text-muted-foreground max-w-sm mx-auto mb-8 text-sm leading-relaxed">
-            Your temporary mailbox is ready! Use this email address to sign up for services, and new
-            emails will appear here automatically.
-          </p>
-
-          {/* Usage Guide */}
-          <div className="w-full max-w-sm bg-muted/30 rounded-xl p-5 border border-border/50">
-            <h4 className="text-sm font-medium mb-4 flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs text-primary font-semibold">
-                ?
-              </span>
-              How to use your temporary mailbox
-            </h4>
-            <ol className="space-y-3 text-sm text-muted-foreground">
-              {[
-                'Copy your email address from the left panel',
-                'Paste it on any website that requires email',
-                'Return here to check for verification emails',
-                'Complete verification and delete the mailbox',
-              ].map((step, i) => (
-                <li key={i} className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-[10px] text-primary font-medium">
-                    {i + 1}
-                  </span>
-                  <span className="leading-relaxed">{step}</span>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </div>
+        <Empty className="border">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <Mail />
+            </EmptyMedia>
+            <EmptyTitle>Waiting for emails...</EmptyTitle>
+            <EmptyDescription>
+              Your temporary mailbox is ready. Use this address to sign up for services and new
+              emails will appear here automatically.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       ) : filteredEmails.length > 0 ? (
         <div className="space-y-2">
-          {filteredEmails.map((mail: Email) => (
+          {filteredEmails.map((mail) => (
             <MailItem key={mail.id} mail={mail} />
           ))}
         </div>
       ) : searchTerm ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-            <Search className="h-8 w-8 text-muted-foreground" />
-          </div>
-          <h3 className="text-lg font-semibold mb-2">No results found</h3>
-          <p className="text-sm text-muted-foreground max-w-xs mb-4">
-            No emails match &quot;<span className="font-medium text-foreground">{searchTerm}</span>
-            &quot;
-          </p>
-          <Button variant="outline" size="sm" onClick={handleClearSearch}>
-            Clear search
-          </Button>
-        </div>
+        <Empty className="border">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <Search />
+            </EmptyMedia>
+            <EmptyTitle>No results found</EmptyTitle>
+            <EmptyDescription>
+              No emails match &quot;
+              <span className="font-medium text-foreground">{searchTerm}</span>
+              &quot;
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <Button variant="outline" size="sm" onClick={handleClearSearch}>
+              Clear search
+            </Button>
+          </EmptyContent>
+        </Empty>
       ) : null}
     </div>
   )

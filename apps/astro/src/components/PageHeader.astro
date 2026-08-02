@@ -9,40 +9,31 @@ interface Props {
 const { title, description, showBackButton = false, backUrl = '/' } = Astro.props
 ---
 
-<header
-  class="sticky top-0 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
-  transition:name="page-header"
->
-  <div class="max-w-7xl mx-auto px-6 py-4">
-    <div class="flex items-center gap-4">
-      {
-        showBackButton && (
-          <a
-            href={backUrl}
-            class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-9 w-9"
-            aria-label="Go back"
-          >
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-          </a>
-        )
-      }
-      <div class="flex-1 min-w-0">
-        <h1 class="text-2xl font-semibold tracking-tight text-foreground truncate">
-          {title}
-        </h1>
-        {
-          description && (
-            <p class="text-sm text-muted-foreground mt-1 line-clamp-2">{description}</p>
-          )
-        }
-      </div>
+<header class="border-b border-border bg-background" transition:name="page-header">
+  <div class="mx-auto flex max-w-7xl items-center gap-3 px-4 py-8 sm:px-6">
+    {
+      showBackButton && (
+        <a
+          href={backUrl}
+          aria-label="Go back"
+          class="inline-flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+        >
+          <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+        </a>
+      )
+    }
+    <div class="min-w-0 flex-1">
+      <h1 class="truncate font-heading text-2xl font-semibold tracking-tight text-foreground">
+        {title}
+      </h1>
+      {description && <p class="mt-1 line-clamp-2 text-sm text-muted-foreground">{description}</p>}
     </div>
   </div>
 </header>

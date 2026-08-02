@@ -166,8 +166,5 @@ dist
 .yarn/install-state.gz
 .pnp.\*
 
-# wrangler project
-
 .dev.vars
 .wrangler/
-wrangler.toml

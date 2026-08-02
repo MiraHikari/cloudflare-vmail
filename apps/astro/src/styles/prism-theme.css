@@ -1,9 +1,10 @@
-/* Custom Prism.js Theme for API Documentation */
+/* Custom Prism.js Theme — driven by the app theme tokens (OKLCH CSS variables).
+   Colors adapt automatically to light/dark mode via var(--*) references. */
 
 /* Base styling */
 code[class*='language-'],
 pre[class*='language-'] {
-  color: #d4d4d4;
+  color: var(--foreground);
   text-shadow: none;
   font-family:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
@@ -18,78 +19,60 @@ pre[class*='language-'] {
   hyphens: none;
 }
 
-/* Dark mode adjustments */
-.dark code[class*='language-'],
-.dark pre[class*='language-'] {
-  color: #e6edf3;
-}
-
-/* Token colors - VSCode Dark+ inspired */
+/* Comments */
 .token.comment,
 .token.prolog,
 .token.doctype,
 .token.cdata {
-  color: #6a9955;
+  color: var(--muted-foreground);
+  font-style: italic;
 }
 
-.token.punctuation {
-  color: #d4d4d4;
-}
-
-.dark .token.punctuation {
-  color: #e6edf3;
-}
-
-.token.property,
-.token.tag,
-.token.boolean,
-.token.number,
-.token.constant,
-.token.symbol,
-.token.deleted {
-  color: #b5cea8;
-}
-
-.token.selector,
-.token.attr-name,
-.token.string,
-.token.char,
-.token.builtin,
-.token.inserted {
-  color: #ce9178;
-}
-
+/* Low-emphasis tokens */
+.token.punctuation,
 .token.operator,
 .token.entity,
 .token.url,
 .language-css .token.string,
 .style .token.string {
-  color: #d4d4d4;
+  color: color-mix(in oklch, var(--foreground) 65%, transparent);
 }
 
-.dark .token.operator,
-.dark .token.entity,
-.dark .token.url,
-.dark .language-css .token.string,
-.dark .style .token.string {
-  color: #e6edf3;
-}
-
+/* Accent tokens (theme primary) */
+.token.keyword,
 .token.atrule,
+.token.important {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.token.string,
+.token.char,
 .token.attr-value,
-.token.keyword {
-  color: #569cd6;
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol,
+.token.inserted {
+  color: var(--primary);
 }
 
+/* Neutral tokens */
+.token.property,
+.token.tag,
+.token.attr-name,
+.token.selector,
 .token.function,
-.token.class-name {
-  color: #dcdcaa;
+.token.class-name,
+.token.builtin {
+  color: var(--foreground);
 }
 
+/* Destructive tokens */
 .token.regex,
-.token.important,
-.token.variable {
-  color: #d16969;
+.token.variable,
+.token.deleted {
+  color: var(--destructive);
 }
 
 .token.important,
@@ -103,70 +86,4 @@ pre[class*='language-'] {
 
 .token.entity {
   cursor: help;
-}
-
-/* JSON specific */
-.language-json .token.property {
-  color: #9cdcfe;
-}
-
-.language-json .token.string {
-  color: #ce9178;
-}
-
-.language-json .token.number {
-  color: #b5cea8;
-}
-
-.language-json .token.boolean,
-.language-json .token.null {
-  color: #569cd6;
-}
-
-/* Python specific */
-.language-python .token.keyword {
-  color: #569cd6;
-}
-
-.language-python .token.builtin {
-  color: #4ec9b0;
-}
-
-.language-python .token.function {
-  color: #dcdcaa;
-}
-
-/* Bash specific */
-.language-bash .token.function,
-.language-bash .token.builtin {
-  color: #569cd6;
-}
-
-.language-bash .token.string {
-  color: #ce9178;
-}
-
-.language-bash .token.variable {
-  color: #9cdcfe;
-}
-
-/* JavaScript/TypeScript specific */
-.language-javascript .token.keyword,
-.language-typescript .token.keyword {
-  color: #569cd6;
-}
-
-.language-javascript .token.function,
-.language-typescript .token.function {
-  color: #dcdcaa;
-}
-
-.language-javascript .token.class-name,
-.language-typescript .token.class-name {
-  color: #4ec9b0;
-}
-
-.language-javascript .token.template-string .token.string,
-.language-typescript .token.template-string .token.string {
-  color: #ce9178;
 }

@@ -2,18 +2,16 @@ import cloudflare from '@astrojs/cloudflare'
 import mdx from '@astrojs/mdx'
 import react from '@astrojs/react'
 import tailwindcss from '@tailwindcss/vite'
-import icon from 'astro-icon'
 
 import { defineConfig } from 'astro/config'
 
 // https://astro.build/config
 export default defineConfig({
   output: 'server',
+  // Keep HTML compression explicit for consistent Worker output.
+  compressHTML: true,
 
   adapter: cloudflare({
-    platformProxy: {
-      enabled: true,
-    },
     imageService: 'compile',
   }),
 
@@ -24,17 +22,7 @@ export default defineConfig({
     '/api-docs': { status: 301, destination: '/docs/api-docs' },
   },
 
-  integrations: [
-    react(),
-    mdx(),
-    icon({
-      include: {
-        ic: ['twotone-shield', 'twotone-info', 'twotone-timer'],
-        mdi: ['arrow-left', 'email'],
-        logos: ['cloudflare-icon'],
-      },
-    }),
-  ],
+  integrations: [react(), mdx()],
 
   vite: {
     resolve: {

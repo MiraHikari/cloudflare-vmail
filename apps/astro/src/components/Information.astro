@@ -1,0 +1,54 @@
+---
+import { Cloud, Globe2, Inbox, Mail, ShieldCheck } from 'lucide-react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+
+const features = [
+  {
+    icon: ShieldCheck,
+    title: 'Privacy Enhanced',
+    description: 'No registration required',
+  },
+  {
+    icon: Inbox,
+    title: 'Instant Inbox',
+    description: 'Receive messages at the edge',
+  },
+  {
+    icon: Globe2,
+    title: 'Multiple Domains',
+    description: 'Choose your preferred domain',
+  },
+  {
+    icon: Cloud,
+    title: 'Cloudflare Powered',
+    description: 'Global edge network',
+  },
+]
+---
+
+<Card>
+  <CardHeader>
+    <CardTitle className="flex items-center gap-2">
+      <Mail className="size-4 text-primary" aria-hidden="true" />
+      Temporary Email, Simplified
+    </CardTitle>
+    <CardDescription>Fast, private and anonymous — no sign-up needed.</CardDescription>
+  </CardHeader>
+  <CardContent>
+    <ul class="flex flex-col gap-3">
+      {
+        features.map(({ icon: FeatureIcon, ...feature }) => (
+          <li class="flex items-start gap-3">
+            <div class="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/10">
+              <FeatureIcon className="size-4 text-primary" aria-hidden="true" />
+            </div>
+            <div class="min-w-0">
+              <p class="text-xs font-medium">{feature.title}</p>
+              <p class="text-xs text-muted-foreground">{feature.description}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </CardContent>
+</Card>

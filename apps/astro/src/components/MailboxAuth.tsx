@@ -1,5 +1,5 @@
 import { actions } from 'astro:actions'
-import { KeyRound, Lock, LogIn, Mail } from 'lucide-react'
+import { LogIn, Mail } from 'lucide-react'
 import { useState } from 'react'
 import { Alert, AlertDescription } from './ui/alert'
 import { Button } from './ui/button'
@@ -11,8 +11,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from './ui/dialog'
+import { Field, FieldGroup, FieldLabel } from './ui/field'
 import { Input } from './ui/input'
-import { Label } from './ui/label'
+import { InputGroup, InputGroupAddon, InputGroupInput } from './ui/input-group'
+import { Spinner } from './ui/spinner'
 
 export function MailboxAuth() {
   const [open, setOpen] = useState(false)
@@ -21,7 +23,7 @@ export function MailboxAuth() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError('')
     setLoading(true)
@@ -57,20 +59,17 @@ export function MailboxAuth() {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <div className="bg-card border border-border rounded-lg p-6">
-        <div className="text-center mb-6">
-          <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-            <KeyRound className="h-6 w-6 text-primary" />
-          </div>
-          <h3 className="text-lg font-semibold mb-2">Have a Claimed Mailbox?</h3>
-          <p className="text-sm text-muted-foreground">
-            Access your protected mailbox with your password
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-1">
+          <p className="text-xs font-medium">Have a claimed mailbox?</p>
+          <p className="text-xs text-muted-foreground">
+            Access your protected mailbox with your password.
           </p>
         </div>
 
         <DialogTrigger asChild>
           <Button className="w-full" variant="outline">
-            <LogIn className="h-4 w-4 mr-2" />
+            <LogIn />
             Login to Mailbox
           </Button>
         </DialogTrigger>
@@ -78,65 +77,66 @@ export function MailboxAuth() {
 
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-primary/10 flex items-center justify-center">
-            <Lock className="h-6 w-6 text-primary" />
-          </div>
-          <DialogTitle className="text-center">Login to Mailbox</DialogTitle>
-          <DialogDescription className="text-center">
-            Enter your claimed mailbox credentials to access your emails
+          <DialogTitle>Login to Mailbox</DialogTitle>
+          <DialogDescription>
+            Enter your claimed mailbox credentials to access your emails.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleLogin} className="space-y-4 mt-4">
-          <div className="space-y-2">
-            <Label htmlFor="login-email">Email Address</Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <form onSubmit={handleLogin}>
+          <FieldGroup>
+            <Field>
+              <FieldLabel htmlFor="login-email">Email Address</FieldLabel>
+              <InputGroup>
+                <InputGroupInput
+                  id="login-email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  autoFocus
+                />
+                <InputGroupAddon>
+                  <Mail />
+                </InputGroupAddon>
+              </InputGroup>
+            </Field>
+
+            <Field>
+              <FieldLabel htmlFor="login-password">Password</FieldLabel>
               <Input
-                id="login-email"
-                type="email"
-                placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="pl-10"
+                id="login-password"
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
-                autoFocus
               />
+            </Field>
+
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+                className="flex-1"
+                disabled={loading}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={loading} className="flex-1">
+                {loading && <Spinner />}
+                {loading ? 'Logging in...' : 'Login'}
+              </Button>
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="login-password">Password</Label>
-            <Input
-              id="login-password"
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          <div className="flex gap-2 pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setOpen(false)}
-              className="flex-1"
-              disabled={loading}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={loading} className="flex-1">
-              {loading ? 'Logging in...' : 'Login'}
-            </Button>
-          </div>
+          </FieldGroup>
         </form>
       </DialogContent>
     </Dialog>

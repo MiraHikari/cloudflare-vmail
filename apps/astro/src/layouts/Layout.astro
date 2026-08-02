@@ -1,6 +1,7 @@
 ---
-import ArtPlums from '@/components/ArtPlums'
-import { Toaster } from '@/components/ui/toaster'
+import Footer from '@/components/Footer.astro'
+import Header from '@/components/Header.astro'
+import { Toaster } from '@/components/ui/sonner'
 import BaseLayout from './BaseLayout.astro'
 
 interface Props {
@@ -12,9 +13,12 @@ const { title, description } = Astro.props
 ---
 
 <BaseLayout title={title} description={description}>
-  <ArtPlums client:only="react" />
-  <div class="min-h-screen bg-background pb-24">
-    <slot />
+  <div class="flex min-h-screen flex-col bg-background">
+    <Header />
+    <div class="flex-1 pt-14">
+      <slot />
+    </div>
+    <Footer />
   </div>
   <Toaster client:only="react" />
 </BaseLayout>

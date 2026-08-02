@@ -167,7 +167,11 @@ export async function copyToClipboard(text: string | null | undefined): Promise<
     try {
       textarea.focus()
       textarea.select()
-      const success = document.execCommand('copy')
+      // `execCommand` remains the fallback for insecure contexts and older browsers.
+      const legacyDocument = document as unknown as {
+        execCommand: (commandId: string) => boolean
+      }
+      const success = legacyDocument.execCommand('copy')
       document.body.removeChild(textarea)
       return success
     } catch {

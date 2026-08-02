@@ -1,0 +1,21 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "emails-worker",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-08-02",
+	"compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+	"vars": {
+		"MAX_EMAIL_BYTES": 1500000
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "prod-emails_forward",
+			"database_id": "fe17b2fd-b691-4ca3-b913-c070e2845fba",
+			"migrations_dir": "../../packages/database/drizzle"
+		}
+	],
+	"observability": {
+		"enabled": true
+	}
+}

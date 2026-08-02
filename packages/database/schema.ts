@@ -1,4 +1,4 @@
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 import { createInsertSchema } from 'drizzle-zod'
 import * as z from 'zod'
 
@@ -12,34 +12,45 @@ export type Address = {
 export type Email = typeof emails.$inferSelect
 export type Mailbox = typeof mailboxes.$inferSelect
 
-export const emails = sqliteTable('emails', {
-  id: text('id').primaryKey(),
-  messageFrom: text('message_from').notNull(),
-  messageTo: text('message_to').notNull(),
-  headers: text('headers', { mode: 'json' }).$type<Header[]>().notNull(),
-  from: text('from', { mode: 'json' }).$type<Address>().notNull(),
-  sender: text('sender', { mode: 'json' }).$type<Address>(),
-  replyTo: text('reply_to', { mode: 'json' }).$type<Address[]>(),
-  deliveredTo: text('delivered_to'),
-  returnPath: text('return_path'),
-  to: text('to', { mode: 'json' }).$type<Address[]>(),
-  cc: text('cc', { mode: 'json' }).$type<Address[]>(),
-  bcc: text('bcc', { mode: 'json' }).$type<Address[]>(),
-  subject: text('subject'),
-  messageId: text('message_id').notNull(),
-  inReplyTo: text('in_reply_to'),
-  references: text('references'),
-  date: text('date'),
-  html: text('html'),
-  text: text('text'),
-  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
-  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
-  isRead: integer('is_read', { mode: 'boolean' }).notNull().default(false),
-  readAt: integer('read_at', { mode: 'timestamp' }),
-  priority: text('priority', { enum: ['high', 'normal', 'low'] })
-    .notNull()
-    .default('normal'),
-})
+export const emails = sqliteTable(
+  'emails',
+  {
+    id: text('id').primaryKey(),
+    messageFrom: text('message_from').notNull(),
+    messageTo: text('message_to').notNull(),
+    headers: text('headers', { mode: 'json' }).$type<Header[]>().notNull(),
+    from: text('from', { mode: 'json' }).$type<Address>().notNull(),
+    sender: text('sender', { mode: 'json' }).$type<Address>(),
+    replyTo: text('reply_to', { mode: 'json' }).$type<Address[]>(),
+    deliveredTo: text('delivered_to'),
+    returnPath: text('return_path'),
+    to: text('to', { mode: 'json' }).$type<Address[]>(),
+    cc: text('cc', { mode: 'json' }).$type<Address[]>(),
+    bcc: text('bcc', { mode: 'json' }).$type<Address[]>(),
+    subject: text('subject'),
+    messageId: text('message_id').notNull(),
+    inReplyTo: text('in_reply_to'),
+    references: text('references'),
+    date: text('date'),
+    html: text('html'),
+    text: text('text'),
+    createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+    isRead: integer('is_read', { mode: 'boolean' }).notNull().default(false),
+    readAt: integer('read_at', { mode: 'timestamp' }),
+    priority: text('priority', { enum: ['high', 'normal', 'low'] })
+      .notNull()
+      .default('normal'),
+  },
+  (table) => [
+    index('emails_message_to_created_at_idx').on(table.messageTo, table.createdAt),
+    index('emails_message_to_is_read_created_at_idx').on(
+      table.messageTo,
+      table.isRead,
+      table.createdAt
+    ),
+  ]
+)
 
 const AddressSchema = z.object({
   address: z.string(),
@@ -47,7 +58,7 @@ const AddressSchema = z.object({
 })
 
 export const insertEmailSchema = createInsertSchema(emails, {
-  headers: z.array(z.record(z.string())),
+  headers: z.array(z.record(z.string(), z.string())),
   from: AddressSchema,
   sender: AddressSchema.optional(),
   replyTo: z.array(AddressSchema).optional(),
@@ -56,17 +67,26 @@ export const insertEmailSchema = createInsertSchema(emails, {
   bcc: z.array(AddressSchema).optional(),
 })
 
-export type InsertEmail = z.infer<typeof insertEmailSchema>
+export type InsertEmail = typeof emails.$inferInsert
 
-// Mailboxes table for claimed mailboxes with password
-export const mailboxes = sqliteTable('mailboxes', {
-  address: text('address').primaryKey(),
-  passwordHash: text('password_hash').notNull(),
-  salt: text('salt').notNull(),
-  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
-  expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
-  lastLoginAt: integer('last_login_at', { mode: 'timestamp' }),
-})
+export const mailboxes = sqliteTable(
+  'mailboxes',
+  {
+    address: text('address').primaryKey(),
+    passwordHash: text('password_hash').notNull(),
+    salt: text('salt').notNull(),
+    credentialVersion: integer('credential_version').notNull().default(1),
+    batchId: text('batch_id'),
+    createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+    // A null expiry denotes a permanent mailbox.
+    expiresAt: integer('expires_at', { mode: 'timestamp' }),
+    lastLoginAt: integer('last_login_at', { mode: 'timestamp' }),
+  },
+  (table) => [
+    index('mailboxes_batch_id_idx').on(table.batchId),
+    index('mailboxes_expires_at_idx').on(table.expiresAt),
+  ]
+)
 
 export const insertMailboxSchema = createInsertSchema(mailboxes)
 export type InsertMailbox = z.infer<typeof insertMailboxSchema>

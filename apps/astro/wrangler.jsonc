@@ -1,0 +1,55 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "vmail-app",
+	"main": "@astrojs/cloudflare/entrypoints/server",
+	"compatibility_date": "2026-08-02",
+	"compatibility_flags": [
+		"nodejs_compat",
+		"global_fetch_strictly_public"
+	],
+	"assets": {
+		"binding": "ASSETS",
+		"directory": "./dist"
+	},
+	"observability": {
+		"enabled": true
+	},
+	// Configure BATCH_ADMIN_TOKEN, JWT_SECRET, and TURNSTILE_SECRET with Wrangler Secrets.
+	"vars": {
+		"AVAILABLE_DOMAINS": "fucku.cfd",
+		"COOKIE_EXPIRES_IN_SECONDS": 86400,
+		"DEV_MODE": "false",
+		"MOCK_EMAIL_COUNT": "5",
+		"SITE_DESCRIPTION": "A privacy-focused virtual temporary email service",
+		"SITE_NAME": "MiraHikari Mail",
+		"TURNSTILE_SITE_KEY": "0x4AAAAAAEEl_pI2rI9rs7qf",
+		"USE_MOCK_DATA": "false"
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "prod-emails_forward",
+			"database_id": "fe17b2fd-b691-4ca3-b913-c070e2845fba",
+			"migrations_dir": "../../packages/database/drizzle"
+		}
+	],
+	"routes": [
+		{
+			"pattern": "fucku.cfd",
+			"zone_name": "fucku.cfd",
+			"custom_domain": true,
+			"enabled": true,
+			"previews_enabled": false
+		},
+		{
+			"pattern": "www.fucku.cfd",
+			"zone_name": "fucku.cfd",
+			"custom_domain": true,
+			"enabled": true,
+			"previews_enabled": false
+		}
+	],
+	"placement": {
+		"mode": "smart"
+	}
+}
