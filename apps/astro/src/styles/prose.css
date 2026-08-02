@@ -112,7 +112,10 @@
   }
 
   .prose table {
+    display: block;
     width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
     border-collapse: collapse;
     margin: 1.25em 0;
   }
@@ -121,6 +124,7 @@
     border: 1px solid var(--color-border);
     padding: 0.5rem 0.75rem;
     text-align: left;
+    overflow-wrap: anywhere;
   }
   .prose thead th {
     background-color: var(--color-muted);

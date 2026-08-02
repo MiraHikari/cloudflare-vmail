@@ -51,10 +51,12 @@ export function SelectDomain({ domains, name = 'domain' }: SelectDomainProps) {
             className={cn('w-full justify-between', !selected && 'text-muted-foreground')}
           >
             <span className="flex items-center gap-2">
-              <Globe className="shrink-0" />
+              <Globe className="size-3.5 shrink-0" />
               <span className="truncate">{selected || 'Select a domain for your mailbox'}</span>
             </span>
-            <ChevronDown className={cn('shrink-0 transition-transform', isOpen && 'rotate-180')} />
+            <ChevronDown
+              className={cn('size-3.5 shrink-0 transition-transform', isOpen && 'rotate-180')}
+            />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)]" align="start">
